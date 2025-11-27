@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    /* --- Paleta AgroSense (Modo Claro) --- */
+    
+    /* Primary Green #2E7D32 (Botões e Destaques) */
+    --primary: 123 46% 34%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary Green #A5D6A7 (Fundos suaves) */
+    --secondary: 122 39% 74%;
+    --secondary-foreground: 123 46% 20%;
+    
+    /* Background #F1F8E9 (Fundo geral) */
+    --background: 84 33% 95%;
+    --foreground: 145 60% 10%;
+
+    /* Elementos de Interface (shadcn) */
+    --card: 0 0% 100%;
+    --card-foreground: 145 60% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 145 60% 10%;
+    --muted: 15 25% 38%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 123 46% 90%; /* Um verde bem clarinho para hover */
+    --accent-foreground: 123 46% 34%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 123 46% 80%;
+    --input: 123 46% 80%;
+    --ring: 123 46% 34%;
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    /* Modo Escuro  */
+    --background: 145 60% 5%;
+    --foreground: 84 33% 95%;
+    --primary: 123 46% 34%;
+    --primary-foreground: 0 0% 100%;
+    /* ... (o resto o shadcn gerencia) */
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
