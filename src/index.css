@@ -4,31 +4,43 @@
  
 @layer base {
   :root {
-    /* --- Paleta AgroSense (Modo Claro) --- */
+    /* --- Paleta AgroSense (Valores Exatos do PDF) --- */
     
-    /* Primary Green #2E7D32 (Botões e Destaques) */
+    /* Primary Green #2E7D32 (Botões) -> HSL: 123 46% 34% */
     --primary: 123 46% 34%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary Green #A5D6A7 (Fundos suaves) */
+    /* Secondary Green #A5D6A7 (Fundos) -> HSL: 122 39% 74% */
     --secondary: 122 39% 74%;
     --secondary-foreground: 123 46% 20%;
     
-    /* Background #F1F8E9 (Fundo geral) */
+    /* Background #F1F8E9 -> HSL: 84 33% 95% */
     --background: 84 33% 95%;
-    --foreground: 145 60% 10%;
+    
+    /* CORREÇÃO: Text Body #374151 (Cinza) -> HSL: 217 19% 27% */
+    --foreground: 217 19% 27%; 
 
-    /* Elementos de Interface (shadcn) */
-    --card: 0 0% 100%;
-    --card-foreground: 145 60% 10%;
+    /* ADIÇÃO: Text Primary #1B5E20 (Títulos) -> HSL: 124 55% 24% */
+    /* Vamos usar uma variável customizada ou aplicar via classe no Tailwind depois */
+    --title-primary: 124 55% 24%;
+
+    /* Elementos Shadcn */
+    --card: 0 0% 100%; /* Surface #FFFFFF -> HSL: 0 0% 100% */
+    --card-foreground: 217 19% 27%; /* Usa a cor do texto body */
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 145 60% 10%;
+    --popover-foreground: 217 19% 27%;
+    
+    /* Earth Brown #795548 -> HSL: 15 25% 38% */
     --muted: 15 25% 38%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 123 46% 90%; /* Um verde bem clarinho para hover */
+    --muted-foreground: 0 0% 100%; /* Texto branco sobre marrom fica melhor */
+    
+    --accent: 123 46% 90%;
     --accent-foreground: 123 46% 34%;
+    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+
     --border: 123 46% 80%;
     --input: 123 46% 80%;
     --ring: 123 46% 34%;
