@@ -33,7 +33,8 @@
     
     /* Earth Brown #795548 -> HSL: 15 25% 38% */
     --muted: 15 25% 38%;
-    --muted-foreground: 0 0% 100%; /* Texto branco sobre marrom fica melhor */
+    /* Earth Brown #795548 para textos secundários */
+    --muted-foreground: 15 25% 38%;
     
     --accent: 123 46% 90%;
     --accent-foreground: 123 46% 34%;
