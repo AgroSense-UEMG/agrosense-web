@@ -71,6 +71,34 @@ export const mockProjectDetails: Record<string, ProjectDetails> = {
       { id: "node-003", name: "Nó Sensor 03", status: "offline" },
     ],
   },
+
+  "2": {
+    id: "2",
+    title: "Estação Meteorológica - Campus UEMG",
+    description:
+      "Coleta de dados climáticos para pesquisa acadêmica sobre microclimas em áreas urbanas.",
+    coordinator: "Dra. Maria Santos",
+    status: "active",
+    devicesCount: 2,
+    devices: [
+      { id: "node-101", name: "Estação Meteorológica 01", status: "online" },
+      { id: "node-102", name: "Estação Meteorológica 02", status: "offline" },
+    ],
+  },
+  
+  "3": {
+    id: "3",
+    title: "Irrigação Inteligente - Horta Comunitária",
+    description:
+      "Sistema automatizado de irrigação baseado em sensores de umidade do solo e previsão meteorológica.",
+    coordinator: "Prof. João Oliveira",
+    status: "active",
+    devicesCount: 2,
+    devices: [
+      { id: "node-201", name: "Controlador de Irrigação 01", status: "online" },
+      { id: "node-202", name: "Sensor de Umidade 01", status: "online" },
+    ],
+  },
 };
 
 /**
