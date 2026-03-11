@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Download, Radio, ChevronDown, ChevronUp } from "lucide-react";
+import { 
+  ArrowLeft, Calendar, Download, Radio, ChevronDown, ChevronUp, 
+  Thermometer, Droplets, Activity, Battery, LineChart 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +116,6 @@ function DevicesSectionMobile({
 
   return (
     <div className="border-b border-border bg-card lg:hidden">
-      {/* Header colapsável */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex w-full items-center justify-between p-4 text-left hover:bg-accent/50 transition-colors"
@@ -136,7 +138,6 @@ function DevicesSectionMobile({
         )}
       </button>
 
-      {/* Lista de dispositivos (expandida) */}
       {isExpanded && (
         <>
           <Separator />
@@ -184,33 +185,14 @@ function ProjectNotFound() {
     </div>
   );
 }
-
-/**
- * Página de Dashboard Dinâmico de um Projeto
- * Rota: /app/projects/:projectId
- * 
- * Conforme especificação:
- * - Header: Nome do Projeto, Seletor de Data (Date Range Picker), Botão "Exportar CSV"
- * - Sidebar/Menu do Projeto: Lista de Dispositivos (Nós) vinculados a este projeto
- * - Área de Dados: Renderização dinâmica baseada no manifesto JSON
- * 
- * TODO (Dupla C - Sprint 3):
- * - Implementar lógica de leitura do manifesto JSON
- * - Renderizar Cards de Sensor dinamicamente
- * - Implementar gráficos com Recharts/Chart.js
- * - Implementar Date Range Picker
- * - Implementar exportação CSV
- */
 export function ProjectDashboardPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
-  // TODO: Substituir por chamada real à API
   const project: ProjectDetails | null = projectId 
     ? getProjectById(projectId) 
     : null;
 
-  // Projeto não encontrado
   if (!project) {
     return <ProjectNotFound />;
   }
@@ -251,7 +233,6 @@ export function ProjectDashboardPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:shrink-0">
-            {/* TODO: Implementar Date Range Picker (Sprint 3) */}
             <Button variant="outline" size="sm" className="gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden xs:inline sm:hidden md:inline">Últimos 7 dias</span>
@@ -264,74 +245,119 @@ export function ProjectDashboardPage() {
         </div>
       </div>
 
-      {/* Dispositivos - Mobile (aparece apenas em telas menores que lg) */}
       <DevicesSectionMobile
         devices={project.devices}
         selectedDeviceId={selectedDeviceId}
         onSelectDevice={setSelectedDeviceId}
       />
 
-      {/* Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar de Dispositivos - Desktop */}
         <DevicesSidebarDesktop
           devices={project.devices}
           selectedDeviceId={selectedDeviceId}
           onSelectDevice={setSelectedDeviceId}
         />
 
-        {/* Área Principal de Dados */}
-        <main className="flex-1 overflow-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/20">
           {selectedDevice ? (
-            /* Dispositivo selecionado - mostrar dados */
-            <Card className="h-full min-h-[300px]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    {selectedDevice.name}
-                  </CardTitle>
-                  <Badge
-                    variant={selectedDevice.status === "online" ? "default" : "secondary"}
-                    className={
-                      selectedDevice.status === "online"
-                        ? "bg-primary text-primary-foreground"
-                        : ""
-                    }
-                  >
-                    {selectedDevice.status === "online" ? "Online" : "Offline"}
-                  </Badge>
+            <div className="flex flex-col gap-6">
+              {/* Cabeçalho do Dispositivo */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight">{selectedDevice.name}</h2>
+                  <p className="text-sm text-muted-foreground">ID: {selectedDevice.id}</p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Dados do sensor serão exibidos aqui.
-                </p>
-                <p className="mt-4 text-xs text-muted-foreground">
-                  Device ID: {selectedDevice.id}
-                </p>
-                {/* 
-                  TODO (Dupla C - Sprint 3):
-                  Implementar Cards de Sensor e gráficos aqui
-                */}
-              </CardContent>
-            </Card>
+                <Badge
+                  variant={selectedDevice.status === "online" ? "default" : "secondary"}
+                  className={selectedDevice.status === "online" ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {selectedDevice.status === "online" ? "Online" : "Offline"}
+                </Badge>
+              </div>
+
+              {/* Grid de Sensores (Mockados) */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Card Temperatura */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Temperatura do Solo</CardTitle>
+                    <Thermometer className="h-4 w-4 text-orange-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">24.5°C</div>
+                    <p className="text-xs text-muted-foreground">+1.2°C desde a última hora</p>
+                  </CardContent>
+                </Card>
+
+                {/* Card Umidade */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Umidade</CardTitle>
+                    <Droplets className="h-4 w-4 text-blue-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">68%</div>
+                    <p className="text-xs text-muted-foreground">Nível ideal alcançado</p>
+                  </CardContent>
+                </Card>
+
+                {/* Card pH */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Nível de pH</CardTitle>
+                    <Activity className="h-4 w-4 text-purple-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">6.2</div>
+                    <p className="text-xs text-muted-foreground">Ligeiramente ácido</p>
+                  </CardContent>
+                </Card>
+
+                {/* Card Bateria */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Bateria do Nó</CardTitle>
+                    <Battery className="h-4 w-4 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">85%</div>
+                    <p className="text-xs text-muted-foreground">Carga solar ativa</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Placeholder do Gráfico */}
+              <Card className="min-h-[350px]">
+                <CardHeader>
+                  <CardTitle>Histórico de Leituras</CardTitle>
+                  <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center h-[250px] border-2 border-dashed border-border rounded-md bg-muted/10 mx-6 mb-6">
+                  <LineChart className="h-10 w-10 text-muted-foreground mb-2 opacity-50" />
+                  <p className="text-sm text-muted-foreground font-medium">
+                    [ Área Reservada para o Gráfico (Recharts/Chart.js) ]
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sprint 3: Integrar leitura do manifesto JSON aqui.
+                  </p>
+                </CardContent>
+              </Card>
+
+            </div>
           ) : (
-            /* Estado Vazio - Nenhum dispositivo selecionado */
-            <Card className="flex h-full min-h-[300px] flex-col items-center justify-center text-center">
+            <Card className="flex h-full min-h-[400px] flex-col items-center justify-center text-center">
               <CardHeader>
-                <CardTitle className="text-lg text-muted-foreground">
-                  Selecione um dispositivo
-                </CardTitle>
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                  <Radio className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <CardTitle className="text-xl">Selecione um dispositivo</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground max-w-md">
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                   {project.devices.length > 0
-                    ? "Clique em um dos dispositivos para visualizar os dados dos sensores em tempo real."
+                    ? "Escolha um dispositivo no menu lateral para visualizar as leituras dos sensores em tempo real."
                     : "Este projeto ainda não possui dispositivos vinculados."
                   }
-                </p>
-                <p className="mt-4 text-xs text-muted-foreground">
-                  Project ID: {projectId}
                 </p>
               </CardContent>
             </Card>
