@@ -67,3 +67,18 @@ export const mockDevices: InventoryDevice[] = [
     status: "offline",
   },
 ];
+
+export const mockChartData = [
+  { time: "00:00", temperature: 22.5, humidity: 75 },
+  { time: "02:00", temperature: 21.0, humidity: 78 },
+  { time: "04:00", temperature: 19.5, humidity: 82 },
+  { time: "06:00", temperature: 18.2, humidity: 85 },
+  { time: "08:00", temperature: 20.5, humidity: 76 },
+  { time: "10:00", temperature: 24.0, humidity: 65 },
+  { time: "12:00", temperature: 27.5, humidity: 55 },
+  { time: "14:00", temperature: 29.8, humidity: 48 },
+  { time: "16:00", temperature: 28.5, humidity: 52 },
+  { time: "18:00", temperature: 25.0, humidity: 60 },
+  { time: "20:00", temperature: 23.5, humidity: 68 },
+  { time: "22:00", temperature: 22.8, humidity: 72 },
+];

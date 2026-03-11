@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { DeviceNode, ProjectDetails } from "@/types";
 import { getProjectById } from "@/mocks";
+import { mockChartData } from "@/mocks/devices";
+import { SensorChart } from "@/components/SensorChart";
 
 /**
  * Componente de botão de dispositivo reutilizável
@@ -185,6 +187,7 @@ function ProjectNotFound() {
     </div>
   );
 }
+
 export function ProjectDashboardPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
@@ -332,15 +335,11 @@ export function ProjectDashboardPage() {
                   <CardTitle>Histórico de Leituras</CardTitle>
                   <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center h-[250px] border-2 border-dashed border-border rounded-md bg-muted/10 mx-6 mb-6">
-                  <LineChart className="h-10 w-10 text-muted-foreground mb-2 opacity-50" />
-                  <p className="text-sm text-muted-foreground font-medium">
-                    [ Área Reservada para o Gráfico (Recharts/Chart.js) ]
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Sprint 3: Integrar leitura do manifesto JSON aqui.
-                  </p>
+
+                <CardContent className="pb-6">
+                  <SensorChart data={mockChartData} />
                 </CardContent>
+
               </Card>
 
             </div>
