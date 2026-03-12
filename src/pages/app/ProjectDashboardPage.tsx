@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
 import type { DeviceNode, ProjectDetails } from "@/types";
 import { getProjectById } from "@/mocks";
 import { mockChartData } from "@/mocks/devices";
-import { SensorChart } from "@/components/SensorChart";
+import { SensorChart } from "@/components/ui/SensorChart";
+import { SensorCard } from "@/components/ui/SensorCard";
 
 /**
  * Componente de botão de dispositivo reutilizável
@@ -278,55 +279,51 @@ export function ProjectDashboardPage() {
                 </Badge>
               </div>
 
-              {/* Grid de Sensores (Mockados) */}
+              {/* Grid de Sensores Dinâmicos */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {/* Card Temperatura */}
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Temperatura do Solo</CardTitle>
-                    <Thermometer className="h-4 w-4 text-orange-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">24.5°C</div>
-                    <p className="text-xs text-muted-foreground">+1.2°C desde a última hora</p>
-                  </CardContent>
-                </Card>
+                <SensorCard
+                  title="Temperatura do Solo"
+                  value="24.5°C"
+                  icon={Thermometer}
+                  iconColor="text-orange-500"
+                  trendText="+1.2°C desde a última hora"
+                  chartData={mockChartData}
+                  dataKey="temperature"
+                  chartColor="#f97316"
+                />
 
-                {/* Card Umidade */}
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Umidade</CardTitle>
-                    <Droplets className="h-4 w-4 text-blue-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">68%</div>
-                    <p className="text-xs text-muted-foreground">Nível ideal alcançado</p>
-                  </CardContent>
-                </Card>
+                <SensorCard
+                  title="Umidade"
+                  value="68%"
+                  icon={Droplets}
+                  iconColor="text-blue-500"
+                  trendText="Nível ideal alcançado"
+                  chartData={mockChartData}
+                  dataKey="humidity"
+                  chartColor="#3b82f6"
+                />
 
-                {/* Card pH */}
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Nível de pH</CardTitle>
-                    <Activity className="h-4 w-4 text-purple-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">6.2</div>
-                    <p className="text-xs text-muted-foreground">Ligeiramente ácido</p>
-                  </CardContent>
-                </Card>
+                <SensorCard
+                  title="Nível de pH"
+                  value="6.2"
+                  icon={Activity}
+                  iconColor="text-purple-500"
+                  trendText="Ligeiramente ácido"
+                  chartData={mockChartData}
+                  dataKey="ph"
+                  chartColor="#a855f7"
+                />
 
-                {/* Card Bateria */}
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Bateria do Nó</CardTitle>
-                    <Battery className="h-4 w-4 text-green-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">85%</div>
-                    <p className="text-xs text-muted-foreground">Carga solar ativa</p>
-                  </CardContent>
-                </Card>
+                <SensorCard
+                  title="Bateria do Nó"
+                  value="85%"
+                  icon={Battery}
+                  iconColor="text-green-500"
+                  trendText="Carga solar ativa"
+                  chartData={mockChartData}
+                  dataKey="battery"
+                  chartColor="#22c55e"
+                />
               </div>
 
               {/* Placeholder do Gráfico */}
