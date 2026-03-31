@@ -12,19 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/types";
 import { mockProjects, mockUser, isUserCoordinator } from "@/mocks";
 
-/**
- * Card de Projeto
- * 
- * Conforme especificação:
- * - Mostrar Título, Descrição curta, Nome do Coordenador e Status (Ativo)
- * - Clicar no card navega para /app/projects/:id
- */
 function ProjectCard({ project }: { project: Project }) {
   const navigate = useNavigate();
 
   return (
     <Card
       className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group"
+      // CLIQUE DO CARD QUE REDIRECIONA PARA A ROTA DINÂMICA
       onClick={() => navigate(`/app/projects/${project.id}`)}
     >
       <CardHeader className="pb-3">
@@ -63,26 +57,15 @@ function ProjectCard({ project }: { project: Project }) {
   );
 }
 
-/**
- * Página de Lista de Projetos
- * Rota: /app/projects
- * 
- * Conforme especificação:
- * - UI: Grid de Cards
- * - Ação (Coordenador): Botão "Novo Projeto" -> Abre Modal com campos Nome e Descrição
- * - Ação (Geral): Clicar no card navega para /app/projects/:id
- */
 export function ProjectsPage() {
   const isCoordinator = isUserCoordinator(mockUser);
 
   const handleNewProject = () => {
-    // TODO: Implementar modal de criação de projeto (Sprint 2)
     console.log("Abrir modal de novo projeto");
   };
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
-      {/* Header */}
       <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[hsl(var(--title-primary))] sm:text-3xl">
@@ -101,7 +84,6 @@ export function ProjectsPage() {
         )}
       </div>
 
-      {/* Grid de Cards */}
       {mockProjects.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {mockProjects.map((project) => (
@@ -109,7 +91,6 @@ export function ProjectsPage() {
           ))}
         </div>
       ) : (
-        /* Estado Vazio */
         <Card className="flex flex-col items-center justify-center p-8 sm:p-12 text-center">
           <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-foreground">
