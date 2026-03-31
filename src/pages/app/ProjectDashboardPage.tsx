@@ -15,6 +15,9 @@ import { mockChartData } from "@/mocks/devices";
 import { SensorChart } from "@/components/ui/SensorChart";
 import { SensorCard } from "@/components/ui/SensorCard";
 
+/**
+ * Componente de botão de dispositivo reutilizável
+ */
 interface DeviceButtonProps {
   device: DeviceNode;
   isSelected?: boolean;
@@ -54,6 +57,9 @@ function DeviceButton({ device, isSelected, onClick }: DeviceButtonProps) {
   );
 }
 
+/**
+ * Sidebar de dispositivos - Desktop
+ */
 interface DevicesSidebarDesktopProps {
   devices: DeviceNode[];
   selectedDeviceId: string | null;
@@ -92,6 +98,9 @@ function DevicesSidebarDesktop({
   );
 }
 
+/**
+ * Seção de dispositivos - Mobile (Colapsável)
+ */
 interface DevicesSectionMobileProps {
   devices: DeviceNode[];
   selectedDeviceId: string | null;
@@ -142,7 +151,9 @@ function DevicesSectionMobile({
                   key={device.id}
                   device={device}
                   isSelected={selectedDeviceId === device.id}
-                  onClick={() => onSelectDevice(device.id)}
+                  onClick={() => {
+                    onSelectDevice(device.id);
+                  }}
                 />
               ))}
             </div>
@@ -153,6 +164,9 @@ function DevicesSectionMobile({
   );
 }
 
+/**
+ * Fallback para quando o projeto não é encontrado
+ */
 function ProjectNotFound() {
   return (
     <div className="flex h-full flex-col items-center justify-center p-6 text-center">
@@ -176,11 +190,9 @@ function ProjectNotFound() {
 }
 
 export function ProjectDashboardPage() {
-  // CAPTURA DO ID DA ROTA DINÂMICA
   const { projectId } = useParams<{ projectId: string }>();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
-  // BUSCA NO MOCK USANDO O ID DA URL
   const project: ProjectDetails | null = projectId 
     ? getProjectById(projectId) 
     : null;
@@ -193,6 +205,7 @@ export function ProjectDashboardPage() {
 
   return (
     <div className="flex h-full flex-col">
+      {/* Header */}
       <div className="border-b border-border bg-card px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3 sm:items-center sm:gap-4">
@@ -252,6 +265,7 @@ export function ProjectDashboardPage() {
         <main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/20">
           {selectedDevice ? (
             <div className="flex flex-col gap-6">
+              {/* Cabeçalho do Dispositivo */}
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold tracking-tight">{selectedDevice.name}</h2>
@@ -265,6 +279,7 @@ export function ProjectDashboardPage() {
                 </Badge>
               </div>
 
+              {/* Grid de Sensores Dinâmicos */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <SensorCard
                   title="Temperatura do Solo"
@@ -311,14 +326,17 @@ export function ProjectDashboardPage() {
                 />
               </div>
 
+              {/* Placeholder do Gráfico */}
               <Card className="min-h-[350px]">
                 <CardHeader>
                   <CardTitle>Histórico de Leituras</CardTitle>
                   <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
                 </CardHeader>
+
                 <CardContent className="pb-6">
                   <SensorChart data={mockChartData} />
                 </CardContent>
+
               </Card>
 
             </div>
