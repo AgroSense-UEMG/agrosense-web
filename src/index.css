@@ -1,68 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
-@layer base {
-  :root {
-    /* --- Paleta AgroSense (Valores Exatos do PDF) --- */
-    
-    /* Primary Green #2E7D32 (Botões) -> HSL: 123 46% 34% */
-    --primary: 123 46% 34%;
-    --primary-foreground: 0 0% 100%;
 
-    /* Secondary Green #A5D6A7 (Fundos) -> HSL: 122 39% 74% */
-    --secondary: 122 39% 74%;
-    --secondary-foreground: 123 46% 20%;
-    
-    /* Background #F1F8E9 -> HSL: 84 33% 95% */
-    --background: 84 33% 95%;
-    
-    /* CORREÇÃO: Text Body #374151 (Cinza) -> HSL: 217 19% 27% */
-    --foreground: 217 19% 27%; 
-
-    /* ADIÇÃO: Text Primary #1B5E20 (Títulos) -> HSL: 124 55% 24% */
-    /* Vamos usar uma variável customizada ou aplicar via classe no Tailwind depois */
-    --title-primary: 124 55% 24%;
-
-    /* Elementos Shadcn */
-    --card: 0 0% 100%; /* Surface #FFFFFF -> HSL: 0 0% 100% */
-    --card-foreground: 217 19% 27%; /* Usa a cor do texto body */
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 217 19% 27%;
-    
-    /* Earth Brown #795548 -> HSL: 15 25% 38% */
-    --muted: 15 25% 38%;
-    /* Earth Brown #795548 para textos secundários */
-    --muted-foreground: 15 25% 38%;
-    
-    --accent: 123 46% 90%;
-    --accent-foreground: 123 46% 34%;
-    
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 123 46% 80%;
-    --input: 123 46% 80%;
-    --ring: 123 46% 34%;
-    --radius: 0.5rem;
-  }
- 
-  .dark {
-    /* Modo Escuro  */
-    --background: 145 60% 5%;
-    --foreground: 84 33% 95%;
-    --primary: 123 46% 34%;
-    --primary-foreground: 0 0% 100%;
-    /* ... (o resto o shadcn gerencia) */
-  }
-}
- 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+body {
+  @apply antialiased text-gray-900;
+  font-family: 'Inter', sans-serif;
 }

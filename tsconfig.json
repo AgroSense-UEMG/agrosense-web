@@ -1,14 +1,30 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
 
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    "jsx": "react-jsx",
+    "strict": true,
+
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    },
+
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src"]
+}
