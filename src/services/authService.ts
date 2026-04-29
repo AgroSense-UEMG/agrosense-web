@@ -58,7 +58,6 @@ export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("usuarioLogado");
 
-  window.dispatchEvent(new Event("userUpdated"));
 }
 
 export function getUsuario() {

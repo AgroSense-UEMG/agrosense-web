@@ -11,18 +11,11 @@ import { PrivateRoute } from "./routes/PrivateRoute"
 import LandingPage from "./pages/app/landing/LandingPage"
 import Login from "./pages/app/landing/Login"
 import { Register } from "./pages/app/landing/Register"
-import Sobre from "./pages/app/landing/Sobre"
 
 import { ProjectDashboardPage } from "./pages/app/ProjectDashboardPage"
 
 // Páginas privadas
-import Perfil from "./pages/app/landing/Perfil"
-import Contato from "./pages/app/landing/Contato"
 import CadastrarPesquisa from "./pages/app/landing/CadastrarPesquisa"
-import MinhasPesquisas from "./pages/app/landing/MinhasPesquisas"
-import Historico from "./pages/app/landing/Historico"
-import GerenciarPesquisas from "./pages/app/landing/GerenciarPesquisas"
-import RedefinirSenha from "./pages/app/landing/RedefinirSenha"
 
 function AppContent() {
   const navigate = useNavigate()
@@ -56,7 +49,6 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/sobre" element={<Sobre />} />
 
           {/* 🔐 ROTAS PRIVADAS */}
           <Route
@@ -64,51 +56,6 @@ function AppContent() {
             element={
               <PrivateRoute>
                 <ProjectDashboardPage />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/historico/:id"
-            element={
-              <PrivateRoute>
-                <Historico />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/perfil"
-            element={
-              <PrivateRoute>
-                <Perfil />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/minhas-pesquisas"
-            element={
-              <PrivateRoute>
-                <MinhasPesquisas />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/pesquisa"
-            element={
-              <PrivateRoute>
-                <GerenciarPesquisas />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/redefinir-senha"
-            element={
-              <PrivateRoute>
-                <RedefinirSenha />
               </PrivateRoute>
             }
           />
@@ -127,15 +74,6 @@ function AppContent() {
             element={
               <PrivateRoute>
                 <CadastrarPesquisa />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/contato"
-            element={
-              <PrivateRoute>
-                <Contato />
               </PrivateRoute>
             }
           />

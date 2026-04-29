@@ -4,7 +4,6 @@ import {
   useState,
   useEffect,
 } from "react";
-
 import type { ReactNode } from "react";
 
 interface Usuario {
@@ -35,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Carregar dados ao iniciar
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem(USER_KEY);
@@ -47,19 +47,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(parsedUser);
           setToken(storedToken);
         } else {
-          throw new Error("Usuário inválido");
+          throw new Error();
         }
       }
     } catch {
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(TOKEN_KEY);
-      setUser(null);
-      setToken(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Sincronizar entre abas
   useEffect(() => {
     function syncAuth() {
       try {
@@ -85,51 +84,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     window.addEventListener("storage", syncAuth);
-    window.addEventListener("authUpdated", syncAuth);
 
     return () => {
       window.removeEventListener("storage", syncAuth);
-      window.removeEventListener("authUpdated", syncAuth);
     };
   }, []);
 
-  useEffect(() => {
-    if (user && token) {
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
-      localStorage.setItem(TOKEN_KEY, token);
-    }
-  }, [user, token]);
-
+  // LOGIN
   const login = (data: Usuario, token: string) => {
     setUser(data);
     setToken(token);
 
     localStorage.setItem(USER_KEY, JSON.stringify(data));
     localStorage.setItem(TOKEN_KEY, token);
-
-    window.dispatchEvent(new Event("authUpdated"));
   };
 
+  // LOGOUT
   const logout = () => {
     setUser(null);
     setToken(null);
 
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TOKEN_KEY);
-
-    window.dispatchEvent(new Event("authUpdated"));
   };
 
+  // ATUALIZAR USUÁRIO
   const updateUser = (newData: Partial<Usuario>) => {
     setUser((prev) => {
       if (!prev) return null;
-      const updated = { ...prev, ...newData };
 
+      const updated = { ...prev, ...newData };
       localStorage.setItem(USER_KEY, JSON.stringify(updated));
+
       return updated;
     });
-
-    window.dispatchEvent(new Event("authUpdated"));
   };
 
   const isAuthenticated = !!user && !!token;

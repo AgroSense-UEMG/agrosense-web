@@ -1,6 +1,6 @@
 export default function ComoFunciona() {
   return (
-    <section className="bg-white py-20">
+    <section id="sobre" className="bg-white py-20 scroll-mt-24">
 
       <div className="max-w-6xl mx-auto px-6 text-center">
 

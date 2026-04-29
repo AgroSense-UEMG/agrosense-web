@@ -11,7 +11,9 @@ export default function LandingPage() {
 
       <div className="bg-gradient-to-b from-green-100 to-white">
         <SectionAnimation>
-          <ComoFunciona />
+          <section id="sobre">
+            <ComoFunciona />
+          </section>
         </SectionAnimation>
 
         <SectionAnimation>
@@ -22,7 +24,6 @@ export default function LandingPage() {
       <SectionAnimation>
         <CTA />
       </SectionAnimation>
-
     </>
   )
 }

@@ -19,8 +19,7 @@ export default function Login() {
 
   const { login: loginContext } = useAuth();
 
-  // ✅ CORREÇÃO AQUI
-  const from = location.state?.from || "/app";
+  const from = location.state?.from?.pathname || "/app/projects";
   const precisaLogin = location.state?.precisaLogin;
 
   const [email, setEmail] = useState("");
@@ -79,22 +78,19 @@ export default function Login() {
     try {
       const data = await apiLogin(emailLimpo, senha);
 
-      // ✅ salva token
       localStorage.setItem("token", data.token);
 
-      // ⚠️ IMPORTANTE: agora precisa passar token também
       loginContext(
         {
           nome: data.user.nome || "",
           email: data.user.email,
           foto: data.user.foto || "",
         },
-        data.token // 🔥 ISSO FALTAVA SEU AUTH CONTEXT NOVO
+        data.token
       );
 
       toast.success("Bem-vindo ao AgroSense!");
 
-      // 🔥 REDIRECIONAMENTO CORRETO
       navigate(from, { replace: true });
 
     } catch (err: any) {

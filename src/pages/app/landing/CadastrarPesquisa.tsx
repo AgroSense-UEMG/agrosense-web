@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { toast } from "react-toastify"
 
 export default function CadastrarPesquisa() {
   const navigate = useNavigate()
+  const location = useLocation()
   
   const [nome, setNome] = useState("")
   const [descricao, setDescricao] = useState("")

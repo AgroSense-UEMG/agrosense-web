@@ -1,4 +1,4 @@
-const API_URL = "https://agrosense.eco.br";
+const API_URL = "http://localhost:3001";
 
 function getToken() {
   return localStorage.getItem("token");
@@ -12,24 +12,21 @@ async function request<T = any>(
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    Accept: "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 
-  const config: RequestInit = {
-    ...options,
-    headers,
-  };
-
   try {
-    const response = await fetch(`${API_URL}${endpoint}`, config);
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
     if (response.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("usuarioLogado");
 
-      window.dispatchEvent(new Event("userUpdated"));
-      window.dispatchEvent(new CustomEvent("redirectToLogin"));
 
       throw new Error("Sessão expirada. Faça login novamente.");
     }
@@ -49,24 +46,18 @@ async function request<T = any>(
 
     return await response.json();
   } catch (error: any) {
-    console.error("API Error:", error.message);
+    console.error("API Error:", error?.message || error);
 
-    if (error.message === "Failed to fetch") {
-      throw new Error("Servidor indisponível. Tente novamente mais tarde.");
+    if (error instanceof TypeError) {
+      throw new Error("Servidor indisponível ou erro de conexão.");
     }
 
-    if (error.name === "TypeError") {
-      throw new Error("Erro de conexão com a internet.");
-    }
-
-    throw new Error(
-      error.message || "Erro inesperado ao comunicar com o servidor"
-    );
+    throw new Error(error?.message || "Erro inesperado");
   }
 }
 
 export async function login(email: string, password: string) {
-  const data = await request<{ token: string; user: any }>("/login", {
+  const data = await request<{ token: string; user: any }>("/api/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -77,30 +68,42 @@ export async function login(email: string, password: string) {
   return data;
 }
 
+export async function enviarCodigo(email: string) {
+  return request<{ codigoGerado: string }>("/api/enviar-codigo", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function finalizarCadastro(email: string, senha: string) {
+  return request("/api/finalizar-cadastro", {
+    method: "POST",
+    body: JSON.stringify({ email, senha }),
+  });
+}
+
 export async function getProjetos() {
-  return request("/projects");
+  return request("/api/projects");
 }
 
 export async function createProjeto(data: any) {
-  return request("/projects", {
+  return request("/api/projects", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export async function getDispositivos() {
-  return request("/devices");
+  return request("/api/devices");
 }
 
 export async function getDispositivoById(id: string) {
-  return request(`/devices/${id}`);
+  return request(`/api/devices/${id}`);
 }
 
 export async function getSensoresByPeriodo(
   startDate: string,
   endDate: string
 ) {
-  return request(
-    `/sensor-data?start=${startDate}&end=${endDate}`
-  );
+  return request(`/api/sensor-data?start=${startDate}&end=${endDate}`);
 }

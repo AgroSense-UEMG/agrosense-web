@@ -27,7 +27,7 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
         to="/login"
         replace
         state={{
-          from: location.pathname,
+          from: location, // 🔥 melhor que pathname
           precisaLogin: true,
         }}
       />
