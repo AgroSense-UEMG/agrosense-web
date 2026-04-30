@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3001";
+const API_URL = "https://agrosense.eco.br";
 
 function getToken() {
   return localStorage.getItem("token");

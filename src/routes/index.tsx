@@ -1,13 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
-// Layouts
 import { AppLayout } from "@/layouts/AppLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
 
-// Private Route
 import { PrivateRoute } from "@/routes/PrivateRoute";
 
-// Páginas públicas
 import LandingPage from "@/pages/app/landing/LandingPage";
 import Login from "@/pages/app/landing/Login";
 import { Register } from "@/pages/app/landing/Register";
@@ -18,7 +15,6 @@ import { ProjectDashboardPage } from "@/pages/app/ProjectDashboardPage";
 import { InventoryPage } from "@/pages/app/InventoryPage";
 
 export const router = createBrowserRouter([
-  // 🌐 ROTAS PÚBLICAS
   {
     path: "/",
     element: <PublicLayout />,
