@@ -32,7 +32,7 @@ export default function Hero() {
       <div className="text-center px-6">
 
         <h1 className="text-4xl md:text-5xl font-bold mb-6">
-          AgroSence
+          AgroSense
         </h1>
 
         <p className="text-lg md:text-xl">

@@ -8,7 +8,7 @@ export default function Footer(){
       <div className="text-center">
 
         <h2 className="text-lg font-semibold">
-          AgroSence 2026
+          AgroSense 2026
         </h2>
 
         <p className="text-sm text-gray-400 mt-1">
