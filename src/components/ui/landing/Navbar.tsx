@@ -8,6 +8,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const irParaSobre = () => {
+    setMenuOpen(false)
+
     if (location.pathname !== "/") {
       navigate("/")
       setTimeout(() => {
@@ -19,6 +21,8 @@ export default function Navbar() {
   }
 
   const irParaHome = () => {
+    setMenuOpen(false)
+
     if (location.pathname !== "/") {
       navigate("/")
       setTimeout(() => {
@@ -39,7 +43,7 @@ export default function Navbar() {
           <h1 className="text-lg font-bold text-green-700">AgroSense</h1>
         </Link>
 
-        {/* CENTRO */}
+        {/* MENU DESKTOP CENTRAL */}
         <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-8">
 
           <button
@@ -74,7 +78,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* MOBILE */}
+        {/* BOTÃO MOBILE */}
         <button
           className="md:hidden text-2xl"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -83,14 +87,42 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* MENU MOBILE */}
       {menuOpen && (
-        <div className="md:hidden px-6 pb-4 flex flex-col gap-3 border-t">
-          <button onClick={irParaSobre}>Sobre</button>
-          <Link to="/pesquisa">Cadastrar Pesquisa</Link>
+        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-md border-t z-50">
+          <div className="flex flex-col items-center gap-4 py-4">
 
-          <button onClick={irParaHome}>Home</button>
+            <button
+              onClick={irParaSobre}
+              className="text-gray-700 hover:text-green-700 font-medium"
+            >
+              Sobre
+            </button>
 
-          <Link to="/login">Login</Link>
+            <Link
+              to="/pesquisa"
+              onClick={() => setMenuOpen(false)}
+              className="bg-green-700 text-white px-6 py-2 rounded-lg font-semibold"
+            >
+              Cadastrar Pesquisa
+            </Link>
+
+            <button
+              onClick={irParaHome}
+              className="text-gray-700 hover:text-green-700 font-medium"
+            >
+              Home
+            </button>
+
+            <Link
+              to="/login"
+              onClick={() => setMenuOpen(false)}
+              className="text-gray-700 hover:text-green-700 font-medium"
+            >
+              Login
+            </Link>
+
+          </div>
         </div>
       )}
     </nav>

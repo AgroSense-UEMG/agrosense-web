@@ -10,6 +10,7 @@ interface Usuario {
 export default function NavbarLogged() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const [usuario, setUsuario] = useState<Usuario | null>(null)
 
@@ -29,11 +30,12 @@ export default function NavbarLogged() {
     localStorage.removeItem("usuarioLogado")
     localStorage.removeItem("token")
 
-
     navigate("/login", { replace: true })
   }
 
   const irParaSobre = () => {
+    setMenuOpen(false)
+
     if (location.pathname !== "/") {
       navigate("/")
       setTimeout(() => {
@@ -45,6 +47,8 @@ export default function NavbarLogged() {
   }
 
   const irParaHome = () => {
+    setMenuOpen(false)
+
     if (location.pathname !== "/") {
       navigate("/")
       setTimeout(() => {
@@ -57,16 +61,16 @@ export default function NavbarLogged() {
 
   return (
     <nav className="bg-white shadow-md w-full sticky top-0 z-50">
-      <div className="w-full px-6 py-3 flex items-center justify-between">
+      <div className="relative w-full px-6 py-3 flex items-center justify-between">
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="AgroSense Logo" className="w-8 h-8" />
+          <img src={logo} className="w-8 h-8" />
           <h1 className="text-lg font-bold text-green-700">AgroSense</h1>
         </Link>
 
-        {/* MENU CENTRAL */}
-        <div className="flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
+        {/* MENU CENTRAL DESKTOP */}
+        <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-6">
 
           <button
             onClick={irParaSobre}
@@ -104,7 +108,51 @@ export default function NavbarLogged() {
           </button>
         </div>
 
+        {/* BOTÃO MOBILE */}
+        <button
+          className="md:hidden text-2xl"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          ☰
+        </button>
       </div>
+
+      {/* MENU MOBILE */}
+      {menuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-md border-t z-50">
+          <div className="flex flex-col items-center gap-4 py-4">
+
+            <button onClick={irParaSobre}>Sobre</button>
+
+            <Link
+              to="/pesquisa"
+              onClick={() => setMenuOpen(false)}
+              className="bg-green-700 text-white px-6 py-2 rounded-lg"
+            >
+              Cadastrar Pesquisa
+            </Link>
+
+            <button onClick={irParaHome}>Home</button>
+
+            <button
+              onClick={() => {
+                setMenuOpen(false)
+                navigate("/app/projects")
+              }}
+            >
+              {usuario?.nome || usuario?.email}
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="text-red-600"
+            >
+              Sair
+            </button>
+
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
