@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // NOVO: useEffect adicionado
 import { useParams, Link } from "react-router-dom";
 import { 
   ArrowLeft, Calendar, Download, Radio, ChevronDown, ChevronUp, 
@@ -176,11 +176,41 @@ function ProjectNotFound() {
 }
 
 export function ProjectDashboardPage() {
-  // CAPTURA DO ID DA ROTA DINÂMICA
   const { projectId } = useParams<{ projectId: string }>();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
-  // BUSCA NO MOCK USANDO O ID DA URL
+  // --- 👇 NOVO: ESTADOS PARA CARREGAMENTO DOS DADOS 👇 ---
+  const [deviceData, setDeviceData] = useState<any>(null); // Recomendo trocar 'any' por uma Interface depois (ex: SensorData)
+  const [isLoading, setIsLoading] = useState(false);
+
+  // NOVO: Efeito que dispara sempre que um dispositivo é clicado
+  useEffect(() => {
+    if (!selectedDeviceId) return;
+
+    async function loadDeviceData() {
+      setIsLoading(true);
+      try {
+        // AQUI VOCÊ CONECTA COM O SEU SERVICE/API (ex: api.get(`/devices/${selectedDeviceId}`))
+        // Para não quebrar nada, fiz um mock simulando o tempo de resposta da API:
+        setTimeout(() => {
+          setDeviceData({
+            temperature: "25.2°C",
+            humidity: "65%",
+            ph: "6.5",
+            battery: "90%"
+          });
+          setIsLoading(false);
+        }, 500); 
+      } catch (error) {
+        console.error("Erro ao buscar dados do dispositivo:", error);
+        setIsLoading(false);
+      }
+    }
+
+    loadDeviceData();
+  }, [selectedDeviceId]);
+  // --- 👆 FIM DA NOVA LÓGICA 👆 ---
+
   const project: ProjectDetails | null = projectId 
     ? getProjectById(projectId) 
     : null;
@@ -265,13 +295,14 @@ export function ProjectDashboardPage() {
                 </Badge>
               </div>
 
+              {/* NOVO: Passando os dados dinâmicos do estado 'deviceData' para os cards */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <SensorCard
                   title="Temperatura do Solo"
-                  value="24.5°C"
+                  value={isLoading ? "..." : (deviceData?.temperature || "--")}
                   icon={Thermometer}
                   iconColor="text-orange-500"
-                  trendText="+1.2°C desde a última hora"
+                  trendText="Dados em tempo real"
                   chartData={mockChartData}
                   dataKey="temperature"
                   chartColor="#f97316"
@@ -279,10 +310,10 @@ export function ProjectDashboardPage() {
 
                 <SensorCard
                   title="Umidade"
-                  value="68%"
+                  value={isLoading ? "..." : (deviceData?.humidity || "--")}
                   icon={Droplets}
                   iconColor="text-blue-500"
-                  trendText="Nível ideal alcançado"
+                  trendText="Dados em tempo real"
                   chartData={mockChartData}
                   dataKey="humidity"
                   chartColor="#3b82f6"
@@ -290,10 +321,10 @@ export function ProjectDashboardPage() {
 
                 <SensorCard
                   title="Nível de pH"
-                  value="6.2"
+                  value={isLoading ? "..." : (deviceData?.ph || "--")}
                   icon={Activity}
                   iconColor="text-purple-500"
-                  trendText="Ligeiramente ácido"
+                  trendText="Dados em tempo real"
                   chartData={mockChartData}
                   dataKey="ph"
                   chartColor="#a855f7"
@@ -301,7 +332,7 @@ export function ProjectDashboardPage() {
 
                 <SensorCard
                   title="Bateria do Nó"
-                  value="85%"
+                  value={isLoading ? "..." : (deviceData?.battery || "--")}
                   icon={Battery}
                   iconColor="text-green-500"
                   trendText="Carga solar ativa"
