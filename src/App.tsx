@@ -1,27 +1,39 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom"
-import { ToastContainer } from "react-toastify"
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from "react-router-dom"
+
 import { useEffect } from "react"
+
+import { ToastContainer } from "react-toastify"
+
 import "react-toastify/dist/ReactToastify.css"
 
 import Navbar from "./components/ui/landing/Navbar"
 
 import { PrivateRoute } from "./routes/PrivateRoute"
 
-// Páginas públicas
+// PÁGINAS PÚBLICAS
 import LandingPage from "./pages/app/landing/LandingPage"
 import Login from "./pages/app/landing/Login"
 import { Register } from "./pages/app/landing/Register"
 
+// PÁGINAS PRIVADAS
 import { ProjectDashboardPage } from "./pages/app/ProjectDashboardPage"
-
-// Páginas privadas
 import CadastrarPesquisa from "./pages/app/landing/CadastrarPesquisa"
 
 function AppContent() {
+
   const navigate = useNavigate()
+
   const location = useLocation()
 
+  // REDIRECIONAMENTO GLOBAL PARA LOGIN
   useEffect(() => {
+
     const handleRedirect = () => {
       navigate("/login", {
         state: {
@@ -32,11 +44,18 @@ function AppContent() {
       })
     }
 
-    window.addEventListener("redirectToLogin", handleRedirect)
+    window.addEventListener(
+      "redirectToLogin",
+      handleRedirect
+    )
 
     return () => {
-      window.removeEventListener("redirectToLogin", handleRedirect)
+      window.removeEventListener(
+        "redirectToLogin",
+        handleRedirect
+      )
     }
+
   }, [navigate, location])
 
   return (
@@ -44,13 +63,32 @@ function AppContent() {
       <Navbar />
 
       <main className="min-h-[calc(100vh-72px)]">
-        <Routes>
-          {/* 🌐 ROTAS PÚBLICAS */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
 
-          {/* 🔐 ROTAS PRIVADAS */}
+        <Routes>
+
+          {/* =========================
+              🌐 ROTAS PÚBLICAS
+          ========================== */}
+
+          <Route
+            path="/"
+            element={<LandingPage />}
+          />
+
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+
+          {/* =========================
+              🔐 ROTAS PRIVADAS
+          ========================== */}
+
           <Route
             path="/dashboard/:id"
             element={
@@ -78,12 +116,23 @@ function AppContent() {
             }
           />
 
-          {/* ❗ ROTA NÃO ENCONTRADA */}
-          <Route path="*" element={<LandingPage />} />
+          {/* =========================
+              ❗ 404
+          ========================== */}
+
+          <Route
+            path="*"
+            element={<LandingPage />}
+          />
+
         </Routes>
+
       </main>
 
-      {/* 🔔 TOAST GLOBAL */}
+      {/* =========================
+          🔔 TOAST GLOBAL
+      ========================== */}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
