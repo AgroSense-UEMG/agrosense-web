@@ -1,59 +1,126 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+} from "react-router-dom"
 
-import { AppLayout } from "@/layouts/AppLayout";
-import { PublicLayout } from "@/layouts/PublicLayout";
+import { AppLayout } from "@/layouts/AppLayout"
+import { PublicLayout } from "@/layouts/PublicLayout"
 
-import { PrivateRoute } from "@/routes/PrivateRoute";
+import { PrivateRoute } from "@/routes/PrivateRoute"
 
-import LandingPage from "@/pages/app/landing/LandingPage";
-import Login from "@/pages/app/landing/Login";
-import { Register } from "@/pages/app/landing/Register";
-import CadastrarPesquisa from "@/pages/app/landing/CadastrarPesquisa";
+// PÚBLICAS
+import LandingPage from "@/pages/app/landing/LandingPage"
+import Login from "@/pages/app/landing/Login"
+import { Register } from "@/pages/app/landing/Register"
 
-import { ProjectsPage } from "@/pages/app/ProjectsPage";
-import { ProjectDashboardPage } from "@/pages/app/ProjectDashboardPage";
-import { InventoryPage } from "@/pages/app/InventoryPage";
+// PRIVADAS
+import CadastrarPesquisa from "@/pages/app/landing/CadastrarPesquisa"
 
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <PublicLayout />,
-    children: [
-      { index: true, element: <LandingPage /> },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
+import { ProjectsPage } from "@/pages/app/ProjectsPage"
 
-      // 🔐 PROTEGIDA
-      {
-        path: "pesquisa",
-        element: (
-          <PrivateRoute>
-            <CadastrarPesquisa />
-          </PrivateRoute>
-        ),
-      },
-    ],
-  },
+import { ProjectDashboardPage } from "@/pages/app/ProjectDashboardPage"
 
-  // 🔐 ROTAS PRIVADAS DO SISTEMA
-  {
-    path: "/app",
-    element: (
-      <PrivateRoute>
-        <AppLayout />
-      </PrivateRoute>
-    ),
-    children: [
-      { index: true, element: <Navigate to="projects" replace /> },
+import { InventoryPage } from "@/pages/app/InventoryPage"
 
-      { path: "projects", element: <ProjectsPage /> },
-      { path: "projects/:projectId", element: <ProjectDashboardPage /> },
-      { path: "inventory", element: <InventoryPage /> },
-    ],
-  },
+export const router =
+  createBrowserRouter([
+    // =================================
+    // 🌐 PÚBLICAS
+    // =================================
+    {
+      path: "/",
 
-  {
-    path: "*",
-    element: <Navigate to="/" replace />,
-  },
-]);
+      element: <PublicLayout />,
+
+      children: [
+        {
+          index: true,
+          element: <LandingPage />,
+        },
+
+        {
+          path: "login",
+          element: <Login />,
+        },
+
+        {
+          path: "register",
+          element: <Register />,
+        },
+
+        // 🔐 ROTA PRIVADA ISOLADA
+        {
+          path: "pesquisa",
+
+          element: (
+            <PrivateRoute>
+              <CadastrarPesquisa />
+            </PrivateRoute>
+          ),
+        },
+      ],
+    },
+
+    // =================================
+    // 🔐 ÁREA PRIVADA
+    // =================================
+    {
+      path: "/app",
+
+      element: (
+        <PrivateRoute>
+          <AppLayout />
+        </PrivateRoute>
+      ),
+
+      children: [
+        // REDIRECT
+        {
+          index: true,
+
+          element: (
+            <Navigate
+              to="projects"
+              replace
+            />
+          ),
+        },
+
+        // PROJETOS
+        {
+          path: "projects",
+
+          element: <ProjectsPage />,
+        },
+
+        // DASHBOARD PROJETO
+        {
+          path: "projects/:projectId",
+
+          element:
+            <ProjectDashboardPage />,
+        },
+
+        // INVENTÁRIO
+        {
+          path: "inventory",
+
+          element: <InventoryPage />,
+        },
+      ],
+    },
+
+    // =================================
+    // ❗ 404
+    // =================================
+    {
+      path: "*",
+
+      element: (
+        <Navigate
+          to="/"
+          replace
+        />
+      ),
+    },
+  ])

@@ -41,12 +41,12 @@ import { mockUser, isUserCoordinator } from "@/mocks";
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Projetos",
-    href: "/app/projects",
+    href: "/projetos", // Ajustado para bater com o App.tsx
     icon: FolderKanban,
   },
   {
     label: "Inventário",
-    href: "/app/inventory",
+    href: "/inventario", // Ajustado para bater com o App.tsx
     icon: Package,
     coordinatorOnly: true,
   },
@@ -74,16 +74,18 @@ function SidebarNavDesktop({
   isExpanded: boolean; 
   onToggle: () => void;
 }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // 👉 DECLARADO AQUI
   const isCoordinator = isUserCoordinator(mockUser);
 
   const filteredNavItems = NAV_ITEMS.filter(
     (item) => !item.coordinatorOnly || isCoordinator
   );
 
+  // 👉 CORREÇÃO 1: Logout Desktop blindado (Apaga histórico)
   const handleLogout = () => {
-    console.log("Logout");
-    navigate("/login");
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -253,16 +255,18 @@ function SidebarNavDesktop({
  * Componente de navegação da Sidebar - Mobile (Expandida)
  */
 function SidebarNavMobile({ onNavigate }: { onNavigate?: () => void }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // 👉 DECLARADO AQUI
   const isCoordinator = isUserCoordinator(mockUser);
 
   const filteredNavItems = NAV_ITEMS.filter(
     (item) => !item.coordinatorOnly || isCoordinator
   );
 
+  // 👉 CORREÇÃO 2: Logout Mobile blindado (Apaga histórico)
   const handleLogout = () => {
-    console.log("Logout");
-    navigate("/login");
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -328,11 +332,6 @@ function SidebarNavMobile({ onNavigate }: { onNavigate?: () => void }) {
 
 /**
  * Layout Principal do Dashboard
- * 
- * Conforme especificação:
- * - Sidebar lateral (desktop) ou Menu Hamburguer (mobile)
- * - Contendo: "Meus Projetos", "Inventário" (se Coordenador), "Sair"
- * - Mostrar nome do usuário e avatar
  */
 export function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
