@@ -1,15 +1,8 @@
 import { useState } from "react"
-import type { ChangeEvent, FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
 const API_URL = "http://127.0.0.1:8000"
-
-type ErrorResponse = {
-  email?: string[]
-  password?: string[]
-  detail?: string
-}
 
 export function Register() {
   const navigate = useNavigate()
@@ -20,19 +13,8 @@ export function Register() {
   const [confirmarSenha, setConfirmarSenha] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const validarEmail = (email: string) => {
-    const emailLimpo = email.trim().toLowerCase()
-    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-    if (!regexEmail.test(emailLimpo)) {
-      return false
-    }
-    // Verifica se termina com uemg.br (aceita @uemg.br e @discente.uemg.br)
-   return emailLimpo.endsWith("uemg.br")
-  }
-
-  const handleRegister = async (e: FormEvent) => {
-    e.preventDefault()
+  const handleRegister = async (e: any) => {
+    if (e && e.preventDefault) e.preventDefault()
 
     if (loading) return
 
@@ -43,7 +25,7 @@ export function Register() {
 
     const emailFormatado = email.trim().toLowerCase()
 
-    if (!validarEmail(emailFormatado)) {
+    if (!emailFormatado.endsWith("uemg.br")) {
       toast.error("O email deve ser da instituição UEMG (@uemg.br ou @discente.uemg.br)")
       return
     }
@@ -74,14 +56,13 @@ export function Register() {
         }),
       })
 
-      const data: ErrorResponse = await response.json()
-
       if (response.ok) {
         toast.success("Cadastro realizado com sucesso!")
         navigate("/login")
         return
       }
 
+      const data = await response.json()
       console.log("Erro API register:", data)
 
       if (data?.email) {
@@ -96,7 +77,7 @@ export function Register() {
 
     } catch (error) {
       console.error(error)
-      toast.error("Erro de conexão. Verifique se a API está rodando no Docker.")
+      toast.error("Erro de conexão. Verifique se a API está rodando.")
     } finally {
       setLoading(false)
     }
@@ -110,7 +91,7 @@ export function Register() {
           <div className="h-1 w-12 bg-green-600 rounded-full mt-1"></div>
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        <div className="space-y-4">
           <input
             type="text"
             placeholder="Nome"
@@ -119,7 +100,7 @@ export function Register() {
             className="border w-full p-3 rounded outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
-            type="email"
+            type="text"
             placeholder="Email (@uemg.br)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -140,13 +121,14 @@ export function Register() {
             className="border w-full p-3 rounded outline-none focus:ring-2 focus:ring-green-500"
           />
           <button
-            type="submit"
+            type="button"
+            onClick={handleRegister}
             disabled={loading}
             className="bg-green-700 text-white w-full py-3 rounded font-bold hover:bg-green-800 transition disabled:opacity-50"
           >
             {loading ? "Criando conta..." : "Solicitar Acesso"}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   )
