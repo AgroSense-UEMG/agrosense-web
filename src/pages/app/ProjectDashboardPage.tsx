@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   ArrowLeft, Calendar, Download, Radio, ChevronDown, ChevronUp, 
   Thermometer, Droplets, Activity, Battery, Loader2 
@@ -14,6 +14,7 @@ import { getProjectById } from "@/mocks";
 import { mockChartData } from "@/mocks/devices";
 import { SensorChart } from "@/components/ui/SensorChart";
 import { SensorCard } from "@/components/ui/SensorCard";
+import { toast } from "sonner"; // Importação do Toast para feedback visual de erro
 
 interface DeviceButtonProps {
   device: DeviceNode;
@@ -176,12 +177,16 @@ function ProjectNotFound() {
 }
 
 export function ProjectDashboardPage() {
-  // CAPTURA DO ID DA ROTA DINÂMICA
+  // 1. FONTE DA VERDADE NA URL: Captura do projectId por parâmetro de rota
   const { projectId } = useParams<{ projectId: string }>();
   
-  // ESTADOS DA PÁGINA
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
-  const [deviceData, setDeviceData] = useState<any>(null);
+  // 2. FONTE DA VERDADE NA URL: Captura do deviceId por Query Params (?device=id) para evitar estado fantasma
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedDeviceId = searchParams.get("device");
+  const setSelectedDeviceId = (id: string) => setSearchParams({ device: id });
+
+  // ESTADOS RESTANTES da página (Dados e Carregamento)
+  const [deviceData, setDeviceData] = useState<any[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // BUSCA NO MOCK USANDO O ID DA URL
@@ -189,18 +194,21 @@ export function ProjectDashboardPage() {
     ? getProjectById(projectId) 
     : null;
 
-  // EFEITO COLATERAL: Busca na API real quando o ID do dispositivo muda
+  // EFEITO COLATERAL: Escuta as mudanças da URL (projectId e selectedDeviceId)
   useEffect(() => {
     if (!selectedDeviceId) return;
 
     async function fetchDeviceData() {
+      setIsLoading(false); // Reseta estado caso haja requisição anterior pendente
       setIsLoading(true);
       try {
-        // Buscando o token exatamente como solicitado no Code Review.
-        // Dica: Adicionei um fallback para "access" caso o seu sistema use esse nome no login.
         const token = localStorage.getItem('access_token') || localStorage.getItem('access'); 
         
-        const response = await fetch(`http://localhost:8000/api/measurements/?device_id=${selectedDeviceId}`, {
+        // Correção 1: Utilizando a variável de ambiente VITE_API_URL
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        
+        // Correção 4: Atualizado para o endpoint oficial de readings
+        const response = await fetch(`${apiUrl}/api/v1/devices/${selectedDeviceId}/readings/`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -208,25 +216,30 @@ export function ProjectDashboardPage() {
 
         if (response.ok) {
           const data = await response.json();
-          setDeviceData(data); // Salvando os dados reais do banco
+          setDeviceData(data); // Salva a lista (array) completa enviada pela API
         } else {
-          console.error("Erro na API ou dispositivo sem dados.");
+          // Correção 3: Feedback visual com Toast ao invés de console.error
+          toast.error("Falha ao carregar sensores");
         }
       } catch (error) {
-        console.error("Erro de conexão com o Back-end:", error);
+        // Correção 3: Feedback visual com Toast ao invés de console.error
+        toast.error("Falha ao carregar sensores");
       } finally {
         setIsLoading(false); 
       }
     }
 
     fetchDeviceData();
-  }, [selectedDeviceId]);
+  }, [projectId, selectedDeviceId]); // Dependências corrigidas para escutar a URL diretamente
 
   if (!project) {
     return <ProjectNotFound />;
   }
 
   const selectedDevice = project.devices.find((d) => d.id === selectedDeviceId);
+
+  // Correção 4: Captura o primeiro índice [0] do array de histórico para exibir as métricas em tempo real nos cards
+  const latestReading = deviceData && deviceData.length > 0 ? deviceData[0] : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -311,7 +324,7 @@ export function ProjectDashboardPage() {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <SensorCard
                       title="Temperatura do Solo"
-                      value={deviceData?.temperature ? `${deviceData.temperature}°C` : "--"}
+                      value={latestReading?.temperature ? `${latestReading.temperature}°C` : "--"}
                       icon={Thermometer}
                       iconColor="text-orange-500"
                       trendText="Atualizado agora"
@@ -322,7 +335,7 @@ export function ProjectDashboardPage() {
 
                     <SensorCard
                       title="Umidade"
-                      value={deviceData?.humidity ? `${deviceData.humidity}%` : "--"}
+                      value={latestReading?.humidity ? `${latestReading.humidity}%` : "--"}
                       icon={Droplets}
                       iconColor="text-blue-500"
                       trendText="Atualizado agora"
@@ -333,7 +346,7 @@ export function ProjectDashboardPage() {
 
                     <SensorCard
                       title="Nível de pH"
-                      value={deviceData?.ph ? deviceData.ph : "--"}
+                      value={latestReading?.ph ? latestReading.ph : "--"}
                       icon={Activity}
                       iconColor="text-purple-500"
                       trendText="Atualizado agora"
@@ -344,7 +357,7 @@ export function ProjectDashboardPage() {
 
                     <SensorCard
                       title="Bateria do Nó"
-                      value={deviceData?.battery ? `${deviceData.battery}%` : "--"}
+                      value={latestReading?.battery ? `${latestReading.battery}%` : "--"}
                       icon={Battery}
                       iconColor="text-green-500"
                       trendText="Atualizado agora"
@@ -360,7 +373,8 @@ export function ProjectDashboardPage() {
                       <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
                     </CardHeader>
                     <CardContent className="pb-6">
-                      <SensorChart data={deviceData?.history || mockChartData} />
+                      {/* Passa a lista completa (array) de leituras reais obtidas para renderizar no gráfico */}
+                      <SensorChart data={(deviceData && deviceData.length > 0) ? deviceData : mockChartData} />
                     </CardContent>
                   </Card>
                 </>
