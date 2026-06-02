@@ -367,14 +367,25 @@ export function ProjectDashboardPage() {
                     />
                   </div>
 
-                  <Card className="min-h-[350px]">
+                 <Card className="min-h-[350px]">
                     <CardHeader>
                       <CardTitle>Histórico de Leituras</CardTitle>
                       <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
                     </CardHeader>
                     <CardContent className="pb-6">
-                      {/* Passa a lista completa (array) de leituras reais obtidas para renderizar no gráfico */}
-                      <SensorChart data={(deviceData && deviceData.length > 0) ? deviceData : mockChartData} />
+                      {/* Renderização condicional para o Empty State */}
+                      {deviceData && deviceData.length > 0 ? (
+                        <SensorChart data={deviceData} />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-border rounded-lg bg-muted/20">
+                          <p className="text-muted-foreground text-sm font-medium">
+                            Aguardando primeiros dados...
+                          </p>
+                          <p className="text-muted-foreground text-xs mt-1">
+                            Nenhuma leitura registrada para este dispositivo no período.
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </>
