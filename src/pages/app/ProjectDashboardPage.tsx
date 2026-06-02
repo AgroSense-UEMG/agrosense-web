@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { 
   ArrowLeft, Calendar, Download, Radio, ChevronDown, ChevronUp, 
-  Thermometer, Droplets, Activity, Battery, LineChart 
+  Thermometer, Droplets, Activity, Battery, Loader2 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { getProjectById } from "@/mocks";
 import { mockChartData } from "@/mocks/devices";
 import { SensorChart } from "@/components/ui/SensorChart";
 import { SensorCard } from "@/components/ui/SensorCard";
+import { toast } from "sonner"; // Importação do Toast para feedback visual de erro
 
 interface DeviceButtonProps {
   device: DeviceNode;
@@ -176,20 +177,69 @@ function ProjectNotFound() {
 }
 
 export function ProjectDashboardPage() {
-  // CAPTURA DO ID DA ROTA DINÂMICA
+  // 1. FONTE DA VERDADE NA URL: Captura do projectId por parâmetro de rota
   const { projectId } = useParams<{ projectId: string }>();
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  
+  // 2. FONTE DA VERDADE NA URL: Captura do deviceId por Query Params (?device=id) para evitar estado fantasma
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedDeviceId = searchParams.get("device");
+  const setSelectedDeviceId = (id: string) => setSearchParams({ device: id });
+
+  // ESTADOS RESTANTES da página (Dados e Carregamento)
+  const [deviceData, setDeviceData] = useState<any[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // BUSCA NO MOCK USANDO O ID DA URL
   const project: ProjectDetails | null = projectId 
     ? getProjectById(projectId) 
     : null;
 
+  // EFEITO COLATERAL: Escuta as mudanças da URL (projectId e selectedDeviceId)
+  useEffect(() => {
+    if (!selectedDeviceId) return;
+
+    async function fetchDeviceData() {
+      setIsLoading(false); // Reseta estado caso haja requisição anterior pendente
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('access'); 
+        
+        // Correção 1: Utilizando a variável de ambiente VITE_API_URL
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        
+        // Correção 4: Atualizado para o endpoint oficial de readings
+        const response = await fetch(`${apiUrl}/api/v1/devices/${selectedDeviceId}/readings/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setDeviceData(data); // Salva a lista (array) completa enviada pela API
+        } else {
+          // Correção 3: Feedback visual com Toast ao invés de console.error
+          toast.error("Falha ao carregar sensores");
+        }
+      } catch (error) {
+        // Correção 3: Feedback visual com Toast ao invés de console.error
+        toast.error("Falha ao carregar sensores");
+      } finally {
+        setIsLoading(false); 
+      }
+    }
+
+    fetchDeviceData();
+  }, [projectId, selectedDeviceId]); // Dependências corrigidas para escutar a URL diretamente
+
   if (!project) {
     return <ProjectNotFound />;
   }
 
   const selectedDevice = project.devices.find((d) => d.id === selectedDeviceId);
+
+  // Correção 4: Captura o primeiro índice [0] do array de histórico para exibir as métricas em tempo real nos cards
+  const latestReading = deviceData && deviceData.length > 0 ? deviceData[0] : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -265,61 +315,81 @@ export function ProjectDashboardPage() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <SensorCard
-                  title="Temperatura do Solo"
-                  value="24.5°C"
-                  icon={Thermometer}
-                  iconColor="text-orange-500"
-                  trendText="+1.2°C desde a última hora"
-                  chartData={mockChartData}
-                  dataKey="temperature"
-                  chartColor="#f97316"
-                />
+              {isLoading ? (
+                <div className="flex h-[400px] items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <SensorCard
+                      title="Temperatura do Solo"
+                      value={latestReading?.temperature ? `${latestReading.temperature}°C` : "--"}
+                      icon={Thermometer}
+                      iconColor="text-orange-500"
+                      trendText="Atualizado agora"
+                      chartData={mockChartData}
+                      dataKey="temperature"
+                      chartColor="#f97316"
+                    />
 
-                <SensorCard
-                  title="Umidade"
-                  value="68%"
-                  icon={Droplets}
-                  iconColor="text-blue-500"
-                  trendText="Nível ideal alcançado"
-                  chartData={mockChartData}
-                  dataKey="humidity"
-                  chartColor="#3b82f6"
-                />
+                    <SensorCard
+                      title="Umidade"
+                      value={latestReading?.humidity ? `${latestReading.humidity}%` : "--"}
+                      icon={Droplets}
+                      iconColor="text-blue-500"
+                      trendText="Atualizado agora"
+                      chartData={mockChartData}
+                      dataKey="humidity"
+                      chartColor="#3b82f6"
+                    />
 
-                <SensorCard
-                  title="Nível de pH"
-                  value="6.2"
-                  icon={Activity}
-                  iconColor="text-purple-500"
-                  trendText="Ligeiramente ácido"
-                  chartData={mockChartData}
-                  dataKey="ph"
-                  chartColor="#a855f7"
-                />
+                    <SensorCard
+                      title="Nível de pH"
+                      value={latestReading?.ph ? latestReading.ph : "--"}
+                      icon={Activity}
+                      iconColor="text-purple-500"
+                      trendText="Atualizado agora"
+                      chartData={mockChartData}
+                      dataKey="ph"
+                      chartColor="#a855f7"
+                    />
 
-                <SensorCard
-                  title="Bateria do Nó"
-                  value="85%"
-                  icon={Battery}
-                  iconColor="text-green-500"
-                  trendText="Carga solar ativa"
-                  chartData={mockChartData}
-                  dataKey="battery"
-                  chartColor="#22c55e"
-                />
-              </div>
+                    <SensorCard
+                      title="Bateria do Nó"
+                      value={latestReading?.battery ? `${latestReading.battery}%` : "--"}
+                      icon={Battery}
+                      iconColor="text-green-500"
+                      trendText="Atualizado agora"
+                      chartData={mockChartData}
+                      dataKey="battery"
+                      chartColor="#22c55e"
+                    />
+                  </div>
 
-              <Card className="min-h-[350px]">
-                <CardHeader>
-                  <CardTitle>Histórico de Leituras</CardTitle>
-                  <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
-                </CardHeader>
-                <CardContent className="pb-6">
-                  <SensorChart data={mockChartData} />
-                </CardContent>
-              </Card>
+                 <Card className="min-h-[350px]">
+                    <CardHeader>
+                      <CardTitle>Histórico de Leituras</CardTitle>
+                      <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
+                    </CardHeader>
+                    <CardContent className="pb-6">
+                      {/* Renderização condicional para o Empty State */}
+                      {deviceData && deviceData.length > 0 ? (
+                        <SensorChart data={deviceData} />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-border rounded-lg bg-muted/20">
+                          <p className="text-muted-foreground text-sm font-medium">
+                            Aguardando primeiros dados...
+                          </p>
+                          <p className="text-muted-foreground text-xs mt-1">
+                            Nenhuma leitura registrada para este dispositivo no período.
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
 
             </div>
           ) : (
