@@ -13,6 +13,10 @@ import type { Project } from "@/types";
 import { getProjects } from "@/services/api";
 import { CreateProjectModal } from "@/components/ui/CreateProjectModal";
 
+function isCoordinator(): boolean {
+  return !!localStorage.getItem("usuarioLogado");
+}
+
 function ProjectCard({ project }: { project: Project }) {
   const navigate = useNavigate();
 
@@ -74,10 +78,12 @@ export function ProjectsPage() {
           </p>
         </div>
 
+        {isCoordinator() && (
         <Button onClick={() => setModalOpen(true)} className="gap-2 shrink-0 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Novo Projeto
         </Button>
+        )}
       </div>
 
       {loading ? (
@@ -107,10 +113,12 @@ export function ProjectsPage() {
             Você ainda não possui projetos cadastrados. Crie um novo projeto
             para começar a monitorar seus dispositivos.
           </p>
+          {isCoordinator() && (
           <Button onClick={() => setModalOpen(true)} className="mt-6 gap-2">
             <Plus className="h-4 w-4" />
             Criar Primeiro Projeto
           </Button>
+          )}
         </Card>
       )}
 

@@ -12,10 +12,15 @@ import { cn } from "@/lib/utils";
 import type { DeviceNode, ProjectDetails } from "@/types";
 import { getProjectById } from "@/mocks";
 import { mockChartData } from "@/mocks/devices";
-import { SensorChart } from "@/components/ui/SensorChart";
+import { SensorChart, type ChartDataPoint } from "@/components/ui/SensorChart";
 import { SensorCard } from "@/components/ui/SensorCard";
-import { toast } from "sonner"; // Importação do Toast para feedback visual de erro
+import { toast } from "sonner";
 
+
+interface SensorReading extends ChartDataPoint {
+  ph?: number;
+  battery?: number;
+}
 interface DeviceButtonProps {
   device: DeviceNode;
   isSelected?: boolean;
@@ -23,7 +28,7 @@ interface DeviceButtonProps {
 }
 
 function DeviceButton({ device, isSelected, onClick }: DeviceButtonProps) {
-  const isOnline = device.status === "online";
+  const isOnline = device.is_online;
 
   return (
     <Button
@@ -57,8 +62,8 @@ function DeviceButton({ device, isSelected, onClick }: DeviceButtonProps) {
 
 interface DevicesSidebarDesktopProps {
   devices: DeviceNode[];
-  selectedDeviceId: string | null;
-  onSelectDevice: (deviceId: string) => void;
+  selectedDeviceId: number | null;
+  onSelectDevice: (deviceId: number) => void;
 }
 
 function DevicesSidebarDesktop({ 
@@ -95,8 +100,8 @@ function DevicesSidebarDesktop({
 
 interface DevicesSectionMobileProps {
   devices: DeviceNode[];
-  selectedDeviceId: string | null;
-  onSelectDevice: (deviceId: string) => void;
+  selectedDeviceId: number | null;
+  onSelectDevice: (deviceId: number) => void;
 }
 
 function DevicesSectionMobile({ 
@@ -107,7 +112,7 @@ function DevicesSectionMobile({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const selectedDevice = devices.find((d) => d.id === selectedDeviceId);
-  const onlineCount = devices.filter((d) => d.status === "online").length;
+  const onlineCount = devices.filter((d) => d.is_online).length;
 
   return (
     <div className="border-b border-border bg-card lg:hidden">
@@ -180,13 +185,11 @@ export function ProjectDashboardPage() {
   // 1. FONTE DA VERDADE NA URL: Captura do projectId por parâmetro de rota
   const { projectId } = useParams<{ projectId: string }>();
   
-  // 2. FONTE DA VERDADE NA URL: Captura do deviceId por Query Params (?device=id) para evitar estado fantasma
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedDeviceId = searchParams.get("device");
-  const setSelectedDeviceId = (id: string) => setSearchParams({ device: id });
-
-  // ESTADOS RESTANTES da página (Dados e Carregamento)
-  const [deviceData, setDeviceData] = useState<any[] | null>(null);
+  const rawDeviceId = searchParams.get("device");
+  const selectedDeviceId = rawDeviceId !== null ? Number(rawDeviceId) : null;
+  const setSelectedDeviceId = (id: number) => setSearchParams({ device: String(id) });
+  const [deviceData, setDeviceData] = useState<SensorReading[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // BUSCA NO MOCK USANDO O ID DA URL
@@ -221,7 +224,7 @@ export function ProjectDashboardPage() {
           // Correção 3: Feedback visual com Toast ao invés de console.error
           toast.error("Falha ao carregar sensores");
         }
-      } catch (error) {
+      } catch {
         // Correção 3: Feedback visual com Toast ao invés de console.error
         toast.error("Falha ao carregar sensores");
       } finally {
@@ -255,21 +258,9 @@ export function ProjectDashboardPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-lg font-bold text-[hsl(var(--title-primary))] sm:text-xl lg:text-2xl line-clamp-1">
-                  {project.title}
+                  {project.name}
                 </h1>
-                <Badge
-                  variant={project.status === "active" ? "default" : "secondary"}
-                  className={cn(
-                    "shrink-0",
-                    project.status === "active" && "bg-primary text-primary-foreground"
-                  )}
-                >
-                  {project.status === "active" ? "Ativo" : "Inativo"}
-                </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Coordenador: {project.coordinator}
-              </p>
             </div>
           </div>
 
@@ -308,10 +299,10 @@ export function ProjectDashboardPage() {
                   <p className="text-sm text-muted-foreground">ID: {selectedDevice.id}</p>
                 </div>
                 <Badge
-                  variant={selectedDevice.status === "online" ? "default" : "secondary"}
-                  className={selectedDevice.status === "online" ? "bg-primary text-primary-foreground" : ""}
+                  variant={selectedDevice.is_online ? "default" : "secondary"}
+                  className={selectedDevice.is_online ? "bg-primary text-primary-foreground" : ""}
                 >
-                  {selectedDevice.status === "online" ? "Online" : "Offline"}
+                  {selectedDevice.is_online ? "Online" : "Offline"}
                 </Badge>
               </div>
 
