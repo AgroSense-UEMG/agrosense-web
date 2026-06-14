@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { 
-  ArrowLeft, Calendar, Download, Radio, ChevronDown, ChevronUp, 
-  Thermometer, Droplets, Activity, Battery, Loader2 
+  ArrowLeft, Radio, ChevronDown, ChevronUp, 
+  Thermometer, Droplets, Activity, Battery, Loader2, UserPlus 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import { mockChartData } from "@/mocks/devices";
 import { SensorChart, type ChartDataPoint } from "@/components/ui/SensorChart";
 import { SensorCard } from "@/components/ui/SensorCard";
 import { toast } from "sonner";
+import { MemberList } from "@/components/ui/MemberList";
+import { InviteMemberModal } from "@/components/ui/InviteMemberModal";
 
 
 interface SensorReading extends ChartDataPoint {
@@ -182,58 +184,87 @@ function ProjectNotFound() {
 }
 
 export function ProjectDashboardPage() {
-  // 1. FONTE DA VERDADE NA URL: Captura do projectId por parâmetro de rota
   const { projectId } = useParams<{ projectId: string }>();
   
   const [searchParams, setSearchParams] = useSearchParams();
   const rawDeviceId = searchParams.get("device");
   const selectedDeviceId = rawDeviceId !== null ? Number(rawDeviceId) : null;
   const setSelectedDeviceId = (id: number) => setSearchParams({ device: String(id) });
+
+  // Datas via URL (padrão: últimos 7 dias)
+  const today = new Date();
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+
+  const startDate = searchParams.get("startDate") || fmtDate(sevenDaysAgo);
+  const endDate = searchParams.get("endDate") || fmtDate(today);
+
+  const setStartDate = (date: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("startDate", date);
+    setSearchParams(params);
+  };
+  const setEndDate = (date: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("endDate", date);
+    setSearchParams(params);
+  };
+
   const [deviceData, setDeviceData] = useState<SensorReading[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // BUSCA NO MOCK USANDO O ID DA URL
   const project: ProjectDetails | null = projectId 
     ? getProjectById(projectId) 
     : null;
 
-  // EFEITO COLATERAL: Escuta as mudanças da URL (projectId e selectedDeviceId)
   useEffect(() => {
     if (!selectedDeviceId) return;
 
+    let cancelled = false;
+
     async function fetchDeviceData() {
-      setIsLoading(false); // Reseta estado caso haja requisição anterior pendente
       setIsLoading(true);
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('access'); 
-        
-        // Correção 1: Utilizando a variável de ambiente VITE_API_URL
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
         
-        // Correção 4: Atualizado para o endpoint oficial de readings
-        const response = await fetch(`${apiUrl}/api/v1/devices/${selectedDeviceId}/readings/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+        const response = await fetch(`${apiUrl}/api/devices/${selectedDeviceId}/readings/?${params}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setDeviceData(data); // Salva a lista (array) completa enviada pela API
-        } else {
-          // Correção 3: Feedback visual com Toast ao invés de console.error
-          toast.error("Falha ao carregar sensores");
+        if (!cancelled) {
+          if (response.ok) {
+            const raw: Array<{ timestamp: string; data: { temperature: number; humidity: number; ph?: number; battery?: number } }> = await response.json();
+            const mapped: SensorReading[] = raw.map((item) => ({
+              time: new Date(item.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+              temperature: item.data.temperature,
+              humidity: item.data.humidity,
+              ph: item.data.ph,
+              battery: item.data.battery,
+            }));
+            setDeviceData(mapped);
+          } else {
+            toast.error("Falha ao carregar sensores");
+          }
         }
       } catch {
-        // Correção 3: Feedback visual com Toast ao invés de console.error
-        toast.error("Falha ao carregar sensores");
+        if (!cancelled) toast.error("Falha ao carregar sensores");
       } finally {
-        setIsLoading(false); 
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     fetchDeviceData();
-  }, [projectId, selectedDeviceId]); // Dependências corrigidas para escutar a URL diretamente
+    return () => { cancelled = true; };
+  }, [projectId, selectedDeviceId, startDate, endDate]);
+
+  // Coordenador: verifica localStorage (mesmo padrão de ProjectsPage)
+  const isCoordinator = !!localStorage.getItem("usuarioLogado");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [membersRefreshKey, setMembersRefreshKey] = useState(0);
+  const pid = projectId ? Number(projectId) : 0;
 
   if (!project) {
     return <ProjectNotFound />;
@@ -241,7 +272,6 @@ export function ProjectDashboardPage() {
 
   const selectedDevice = project.devices.find((d) => d.id === selectedDeviceId);
 
-  // Correção 4: Captura o primeiro índice [0] do array de histórico para exibir as métricas em tempo real nos cards
   const latestReading = deviceData && deviceData.length > 0 ? deviceData[0] : null;
 
   return (
@@ -265,14 +295,24 @@ export function ProjectDashboardPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:shrink-0">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              <span className="hidden xs:inline sm:hidden md:inline">Últimos 7 dias</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              <span className="hidden xs:inline sm:hidden md:inline">Exportar</span>
-            </Button>
+            <label className="flex items-center gap-1.5 text-sm">
+              <span className="text-muted-foreground hidden sm:inline">De</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+            <label className="flex items-center gap-1.5 text-sm">
+              <span className="text-muted-foreground hidden sm:inline">Até</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
           </div>
         </div>
       </div>
@@ -361,7 +401,7 @@ export function ProjectDashboardPage() {
                  <Card className="min-h-[350px]">
                     <CardHeader>
                       <CardTitle>Histórico de Leituras</CardTitle>
-                      <p className="text-sm text-muted-foreground">Variação de temperatura e umidade nas últimas 24h.</p>
+                      <p className="text-sm text-muted-foreground">Variação de temperatura e umidade no período selecionado.</p>
                     </CardHeader>
                     <CardContent className="pb-6">
                       {/* Renderização condicional para o Empty State */}
@@ -382,6 +422,27 @@ export function ProjectDashboardPage() {
                 </>
               )}
 
+
+              {pid > 0 && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Membros</h3>
+                    {isCoordinator && (
+                      <Button size="sm" className="gap-2" onClick={() => setInviteOpen(true)}>
+                        <UserPlus className="h-4 w-4" />
+                        Convidar Membro
+                      </Button>
+                    )}
+                  </div>
+                  <MemberList projectId={pid} refreshKey={membersRefreshKey} />
+                  <InviteMemberModal
+                    projectId={pid}
+                    open={inviteOpen}
+                    onOpenChange={setInviteOpen}
+                    onInvited={() => setMembersRefreshKey((k) => k + 1)}
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <Card className="flex h-full min-h-[400px] flex-col items-center justify-center text-center">

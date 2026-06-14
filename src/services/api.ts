@@ -1,4 +1,4 @@
-import type { Project, Device } from "@/types";
+import type { Project, Device, Member } from "@/types";
 
 const API_URL = "http://127.0.0.1:8000";
 
@@ -105,4 +105,23 @@ export async function updateDevice(
     method: "PATCH",
     body: JSON.stringify(data),
   });
+}
+
+// =========================
+// MEMBERS (mock — substituir por API real)
+// =========================
+
+// TODO: substituir por GET /api/projects/{id}/members/ quando disponível
+export async function getMembers(projectId: number): Promise<Member[]> {
+  const raw = localStorage.getItem('members_' + projectId);
+  return raw ? JSON.parse(raw) : [];
+}
+
+// TODO: substituir por POST /api/projects/{id}/invite/ quando disponível
+export async function inviteMember(projectId: number, email: string): Promise<Member> {
+  const members = await getMembers(projectId);
+  const newMember: Member = { id: Date.now(), email, name: email.split('@')[0], role: 'Pesquisador' };
+  members.push(newMember);
+  localStorage.setItem('members_' + projectId, JSON.stringify(members));
+  return newMember;
 }

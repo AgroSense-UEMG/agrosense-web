@@ -74,3 +74,16 @@ export interface NavItem {
   /** Se true, apenas coordenadores podem ver este item */
   coordinatorOnly?: boolean;
 }
+
+// ============================================================
+// Member Types
+// ============================================================
+
+export type MemberRole = "Coordenador" | "Pesquisador";
+
+export interface Member {
+  id: number;
+  name: string;
+  email: string;
+  role: MemberRole;
+}
