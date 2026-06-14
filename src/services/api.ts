@@ -42,6 +42,7 @@ async function request<T>(
         errorMessage =
           (typeof errorData.message === "string" ? errorData.message : undefined) ??
           (typeof errorData.detail === "string" ? errorData.detail : undefined) ??
+          (typeof errorData.error === "string" ? errorData.error : undefined) ??
           errorMessage;
       } catch {
         /* corpo não é JSON — usa mensagem padrão */

@@ -63,8 +63,10 @@ export function InviteMemberModal({ projectId, open, onOpenChange, onInvited }: 
       toast.success(`Convite enviado para ${email.trim()}`);
       handleClose();
       onInvited();
-    } catch {
-      toast.error("Erro ao enviar convite.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao enviar convite.";
+      setErro(msg);
+      toast.error(msg);
     } finally {
       setEnviando(false);
     }
