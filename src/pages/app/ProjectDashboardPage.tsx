@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { DeviceNode, ProjectDetails } from "@/types";
-import { getProjectById } from "@/mocks";
+import { getProjectDevices } from "@/services/api";
 import { mockChartData } from "@/mocks/devices";
 import { SensorChart, type ChartDataPoint } from "@/components/ui/SensorChart";
 import { SensorCard } from "@/components/ui/SensorCard";
@@ -213,10 +213,45 @@ export function ProjectDashboardPage() {
 
   const [deviceData, setDeviceData] = useState<SensorReading[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [project, setProject] = useState<ProjectDetails | null>(null);
+  const [projectLoading, setProjectLoading] = useState(true);
+  const [projectError, setProjectError] = useState("");
 
-  const project: ProjectDetails | null = projectId 
-    ? getProjectById(projectId) 
-    : null;
+  // Carrega projeto + dispositivos da API
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+
+    async function load() {
+      setProjectLoading(true);
+      setProjectError("");
+      try {
+        const token = localStorage.getItem("token") || "";
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+        const res = await fetch(`${apiUrl}/api/projects/${projectId}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Projeto não encontrado");
+        const proj = await res.json();
+
+        const devices: DeviceNode[] = await getProjectDevices(Number(projectId));
+
+        if (!cancelled) {
+          setProject({ ...proj, devices });
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          setProjectError(err instanceof Error ? err.message : "Erro ao carregar projeto");
+        }
+      } finally {
+        if (!cancelled) setProjectLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   useEffect(() => {
     if (!selectedDeviceId) return;
@@ -265,6 +300,18 @@ export function ProjectDashboardPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [membersRefreshKey, setMembersRefreshKey] = useState(0);
   const pid = projectId ? Number(projectId) : 0;
+
+  if (projectLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (projectError) {
+    return <ProjectNotFound />;
+  }
 
   if (!project) {
     return <ProjectNotFound />;

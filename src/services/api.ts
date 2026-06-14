@@ -123,3 +123,11 @@ export async function inviteMember(projectId: number, email: string): Promise<Me
     body: JSON.stringify({ email }),
   });
 }
+
+// =========================
+// PROJECT DEVICES
+// =========================
+
+export async function getProjectDevices(projectId: number): Promise<Device[]> {
+  return request<Device[]>(`/api/projects/${projectId}/devices/`);
+}
