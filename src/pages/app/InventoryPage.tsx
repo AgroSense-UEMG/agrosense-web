@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Copy, Check, Pencil, MoreHorizontal, Key, Radio } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Copy, Check, MoreHorizontal, Key, Radio, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -24,36 +23,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { InventoryDevice, DeviceStatus } from "@/types";
-import { mockApiKey, mockDevices } from "@/mocks";
+import type { Device } from "@/types";
+import { getDevices } from "@/services/api";
+import { EditAliasModal } from "@/components/ui/EditAliasModal";
+import { LinkProjectDropdown } from "@/components/ui/LinkProjectDropdown";
+
+const API_KEY_FALLBACK = "ask_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 /**
- * Configuração de cores e labels para status de dispositivos
+ * Badge de status baseado no booleano is_online
  */
-const STATUS_CONFIG: Record<DeviceStatus, { label: string; className: string }> = {
-  online: {
-    label: "Online",
-    className: "bg-primary text-primary-foreground",
-  },
-  offline: {
-    label: "Offline",
-    className: "bg-muted/80 text-foreground",
-  },
-  maintenance: {
-    label: "Manutenção",
-    className: "bg-yellow-500 text-white",
-  },
-};
-
-/**
- * Badge de status com cores apropriadas
- */
-function StatusBadge({ status }: { status: DeviceStatus }) {
-  const config = STATUS_CONFIG[status];
-
+function StatusBadge({ isOnline }: { isOnline: boolean }) {
   return (
-    <Badge variant="secondary" className={config.className}>
-      {config.label}
+    <Badge
+      variant="secondary"
+      className={isOnline ? "bg-primary text-primary-foreground" : "bg-muted/80 text-foreground"}
+    >
+      {isOnline ? "Online" : "Offline"}
     </Badge>
   );
 }
@@ -64,8 +50,10 @@ function StatusBadge({ status }: { status: DeviceStatus }) {
 function ApiKeyDisplay() {
   const [copied, setCopied] = useState(false);
 
+  const apiKey = API_KEY_FALLBACK;
+
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(mockApiKey);
+    await navigator.clipboard.writeText(apiKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -75,35 +63,22 @@ function ApiKeyDisplay() {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <Key className="h-5 w-5 text-primary" />
-          <CardTitle className="text-base font-semibold">
-            Minha Chave de API
-          </CardTitle>
+          <CardTitle className="text-base font-semibold">Minha Chave de API</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-2">
           <code className="flex-1 rounded-md bg-muted/20 px-3 py-2 font-mono text-sm text-foreground overflow-hidden text-ellipsis">
-            {mockApiKey.slice(0, 12)}...{mockApiKey.slice(-4)}
+            {apiKey.slice(0, 12)}...{apiKey.slice(-4)}
           </code>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleCopy}
-                className="shrink-0"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-primary" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+              <Button variant="outline" size="icon" onClick={handleCopy} className="shrink-0">
+                {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                 <span className="sr-only">Copiar chave de API</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {copied ? "Copiado!" : "Copiar chave"}
-            </TooltipContent>
+            <TooltipContent>{copied ? "Copiado!" : "Copiar chave"}</TooltipContent>
           </Tooltip>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
@@ -114,24 +89,12 @@ function ApiKeyDisplay() {
   );
 }
 
-/**
- * Ações comuns para dispositivos
- */
 interface DeviceActionsProps {
-  device: InventoryDevice;
+  device: Device;
+  onEditAlias: (device: Device) => void;
 }
 
-function DeviceActions({ device }: DeviceActionsProps) {
-  const handleEditAlias = () => {
-    // TODO: Implementar modal de edição de apelido (Sprint 2)
-    console.log("Editar apelido:", device.id);
-  };
-
-  const handleChangeProject = () => {
-    // TODO: Implementar dropdown de mudança de projeto (Sprint 2)
-    console.log("Mudar projeto:", device.id);
-  };
-
+function DeviceActions({ device, onEditAlias }: DeviceActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -141,13 +104,9 @@ function DeviceActions({ device }: DeviceActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleEditAlias}>
+        <DropdownMenuItem onClick={() => onEditAlias(device)}>
           <Pencil className="mr-2 h-4 w-4" />
           Editar Apelido
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleChangeProject}>
-          Vincular a Projeto
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -157,32 +116,39 @@ function DeviceActions({ device }: DeviceActionsProps) {
 /**
  * Linha da tabela de dispositivos - Desktop
  */
-function DeviceRow({ device }: { device: InventoryDevice }) {
+function DeviceRow({
+  device,
+  onEditAlias,
+  onLinked,
+}: {
+  device: Device;
+  onEditAlias: (device: Device) => void;
+  onLinked: () => void;
+}) {
   return (
     <TableRow>
-      <TableCell className="font-medium">{device.model}</TableCell>
-      <TableCell>
-        <code className="rounded bg-muted/20 px-2 py-1 text-xs font-mono">
-          {device.macAddress}
-        </code>
+      <TableCell className="font-medium">
+        {device.name || <span className="text-muted-foreground italic">Sem nome</span>}
       </TableCell>
       <TableCell>
-        {device.alias || (
-          <span className="text-muted-foreground italic">Sem apelido</span>
-        )}
-      </TableCell>
-      <TableCell className="max-w-[200px]">
-        {device.linkedProject ? (
-          <span className="line-clamp-1">{device.linkedProject}</span>
+        {device.project !== null ? (
+          <span className="text-sm">Projeto #{device.project}</span>
         ) : (
           <span className="text-muted-foreground italic">Não vinculado</span>
         )}
       </TableCell>
       <TableCell>
-        <StatusBadge status={device.status} />
+        <StatusBadge isOnline={device.is_online} />
+      </TableCell>
+      <TableCell>
+        <LinkProjectDropdown
+          deviceId={device.id}
+          currentProjectId={device.project}
+          onLinked={onLinked}
+        />
       </TableCell>
       <TableCell className="text-right">
-        <DeviceActions device={device} />
+        <DeviceActions device={device} onEditAlias={onEditAlias} />
       </TableCell>
     </TableRow>
   );
@@ -190,52 +156,53 @@ function DeviceRow({ device }: { device: InventoryDevice }) {
 
 /**
  * Card de dispositivo - Mobile
- * Exibe informações em formato de card para melhor visualização em telas pequenas
  */
-function DeviceCard({ device }: { device: InventoryDevice }) {
-  const isOnline = device.status === "online";
+function DeviceCard({
+  device,
+  onEditAlias,
+  onLinked,
+}: {
+  device: Device;
+  onEditAlias: (device: Device) => void;
+  onLinked: () => void;
+}) {
+  const isOnline = device.is_online;
 
   return (
     <Card className="relative">
       <CardContent className="p-4">
-        {/* Header do card */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 min-w-0">
             <Radio
-              className={cn(
-                "h-4 w-4 shrink-0",
-                isOnline ? "text-primary" : "text-muted-foreground"
-              )}
+              className={cn("h-4 w-4 shrink-0", isOnline ? "text-primary" : "text-muted-foreground")}
             />
             <span className="font-medium truncate">
-              {device.alias || device.model}
+              {device.name || <span className="text-muted-foreground italic">Sem nome</span>}
             </span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <StatusBadge status={device.status} />
-            <DeviceActions device={device} />
+            <StatusBadge isOnline={isOnline} />
+            <DeviceActions device={device} onEditAlias={onEditAlias} />
           </div>
         </div>
 
-        {/* Informações do dispositivo */}
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Modelo:</span>
-            <span className="font-medium">{device.model}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">MAC:</span>
-            <code className="rounded bg-muted/20 px-1.5 py-0.5 text-xs font-mono">
-              {device.macAddress}
-            </code>
-          </div>
-          <div className="flex justify-between gap-2">
-            <span className="text-muted-foreground shrink-0">Projeto:</span>
-            <span className="text-right truncate">
-              {device.linkedProject || (
+            <span className="text-muted-foreground">Projeto:</span>
+            <span className="text-right">
+              {device.project !== null ? (
+                <span>Projeto #{device.project}</span>
+              ) : (
                 <span className="text-muted-foreground italic">Não vinculado</span>
               )}
             </span>
+          </div>
+          <div className="flex justify-end">
+            <LinkProjectDropdown
+              deviceId={device.id}
+              currentProjectId={device.project}
+              onLinked={onLinked}
+            />
           </div>
         </div>
       </CardContent>
@@ -250,9 +217,7 @@ function EmptyDevicesState() {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <Radio className="h-12 w-12 text-muted-foreground mb-4" />
-      <p className="text-foreground font-medium">
-        Nenhum dispositivo registrado
-      </p>
+      <p className="text-foreground font-medium">Nenhum dispositivo registrado</p>
       <p className="mt-2 text-sm text-muted-foreground max-w-sm">
         Use sua chave de API para conectar dispositivos IoT à plataforma.
       </p>
@@ -260,24 +225,39 @@ function EmptyDevicesState() {
   );
 }
 
-/**
- * Página de Inventário de Dispositivos
- * Rota: /app/inventory (Apenas Coordenador)
- * 
- * Conforme especificação:
- * - Header: Mostrar "Minha Chave de API" (campo com botão de copiar)
- * - Tabela/Lista: Listar dispositivos reivindicados
- *   - Colunas: Modelo, MAC Address (ID), Apelido (Editável), Projeto Vinculado (Dropdown), Status
- * - Ações: Botão "Editar Apelido" (Modal), Dropdown para mudar o Projeto Vinculado
- * 
- * Responsividade:
- * - Desktop (md+): Tabela tradicional
- * - Mobile: Cards empilhados
- */
 export function InventoryPage() {
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [aliasModalOpen, setAliasModalOpen] = useState(false);
+  const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+
+  const fetchDevices = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getDevices();
+      setDevices(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao carregar dispositivos.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDevices();
+  }, [fetchDevices]);
+
+  const handleEditAlias = (device: Device) => {
+    setEditingDevice(device);
+    setAliasModalOpen(true);
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-6">
-      {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold text-[hsl(var(--title-primary))] sm:text-3xl">
           Inventário de Dispositivos
@@ -287,49 +267,67 @@ export function InventoryPage() {
         </p>
       </div>
 
-      {/* API Key Section */}
       <div className="mb-6 sm:mb-8 max-w-xl">
         <ApiKeyDisplay />
       </div>
 
-      {/* Devices Section */}
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Dispositivos Registrados</CardTitle>
             <span className="text-sm text-muted-foreground">
-              {mockDevices.length} dispositivo{mockDevices.length !== 1 ? "s" : ""}
+              {devices.length} dispositivo{devices.length !== 1 ? "s" : ""}
             </span>
           </div>
         </CardHeader>
         <CardContent className="p-0 sm:p-6 sm:pt-0">
-          {mockDevices.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-destructive font-medium">{error}</p>
+              <Button variant="outline" onClick={fetchDevices} className="mt-4 gap-2">
+                Tentar novamente
+              </Button>
+            </div>
+          ) : devices.length > 0 ? (
             <>
-              {/* Tabela - Desktop (md+) */}
+              {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Modelo</TableHead>
-                      <TableHead>MAC Address</TableHead>
-                      <TableHead>Apelido</TableHead>
-                      <TableHead>Projeto Vinculado</TableHead>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Projeto</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Vincular</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockDevices.map((device) => (
-                      <DeviceRow key={device.id} device={device} />
+                    {devices.map((device) => (
+                      <DeviceRow
+                        key={device.id}
+                        device={device}
+                        onEditAlias={handleEditAlias}
+                        onLinked={fetchDevices}
+                      />
                     ))}
                   </TableBody>
                 </Table>
               </div>
 
-              {/* Cards - Mobile (abaixo de md) */}
+              {/* Mobile Cards */}
               <div className="md:hidden p-4 pt-0 space-y-3">
-                {mockDevices.map((device) => (
-                  <DeviceCard key={device.id} device={device} />
+                {devices.map((device) => (
+                  <DeviceCard
+                    key={device.id}
+                    device={device}
+                    onEditAlias={handleEditAlias}
+                    onLinked={fetchDevices}
+                  />
                 ))}
               </div>
             </>
@@ -338,6 +336,19 @@ export function InventoryPage() {
           )}
         </CardContent>
       </Card>
+
+      {editingDevice && (
+        <EditAliasModal
+          open={aliasModalOpen}
+          onOpenChange={(open) => {
+            setAliasModalOpen(open);
+            if (!open) setEditingDevice(null);
+          }}
+          deviceId={editingDevice.id}
+          currentName={editingDevice.name}
+          onUpdated={fetchDevices}
+        />
+      )}
     </div>
   );
 }

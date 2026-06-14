@@ -41,12 +41,12 @@ import { mockUser, isUserCoordinator } from "@/mocks";
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Projetos",
-    href: "/projetos", // Ajustado para bater com o App.tsx
+    href: "/app/projects",
     icon: FolderKanban,
   },
   {
     label: "Inventário",
-    href: "/inventario", // Ajustado para bater com o App.tsx
+    href: "/app/inventory",
     icon: Package,
     coordinatorOnly: true,
   },
@@ -83,8 +83,9 @@ function SidebarNavDesktop({
 
   // 👉 CORREÇÃO 1: Logout Desktop blindado (Apaga histórico)
   const handleLogout = () => {
-    localStorage.removeItem("access");
+    localStorage.removeItem("token");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("usuarioLogado");
     navigate("/login", { replace: true });
   };
 
@@ -262,10 +263,10 @@ function SidebarNavMobile({ onNavigate }: { onNavigate?: () => void }) {
     (item) => !item.coordinatorOnly || isCoordinator
   );
 
-  // 👉 CORREÇÃO 2: Logout Mobile blindado (Apaga histórico)
   const handleLogout = () => {
-    localStorage.removeItem("access");
+    localStorage.removeItem("token");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("usuarioLogado");
     navigate("/login", { replace: true });
   };
 

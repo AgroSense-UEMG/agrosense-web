@@ -27,7 +27,7 @@ type LoginResponse = {
   user: {
     id: number
     email: string
-    nome: string
+    first_name: string
   }
 }
 
@@ -177,7 +177,7 @@ export default function Login() {
       if (!response.ok) {
 
         const mensagemErro =
-          (data as any)?.detail ||
+          (data as { detail?: string })?.detail ||
           "E-mail ou senha inválidos"
 
         setErro(mensagemErro)
@@ -210,7 +210,7 @@ export default function Login() {
           id: data.user.id,
 
           nome:
-            data.user.nome,
+            data.user.first_name,
 
           email:
             data.user.email,
