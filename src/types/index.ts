@@ -60,6 +60,7 @@ export interface Device {
   name: string;
   project: number | null;
   is_online: boolean;
+  last_seen: string | null; 
   created_at: string;
 }
 

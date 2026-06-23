@@ -22,6 +22,7 @@ export const mockDevices: Device[] = [
     name: "Nó Sensor 01",
     project: 1,
     is_online: true,
+    last_seen: "2026-06-22T10:00:00Z",
     created_at: "2026-01-20T08:00:00Z",
   },
   {
@@ -29,6 +30,7 @@ export const mockDevices: Device[] = [
     name: "Nó Sensor 02",
     project: 1,
     is_online: true,
+    last_seen: "2026-06-22T09:30:00Z",
     created_at: "2026-01-20T08:00:00Z",
   },
   {
@@ -36,6 +38,7 @@ export const mockDevices: Device[] = [
     name: "Nó Sensor 03",
     project: 1,
     is_online: false,
+    last_seen: null,
     created_at: "2026-01-20T08:00:00Z",
   },
   {
@@ -43,6 +46,7 @@ export const mockDevices: Device[] = [
     name: "Estação Meteo Campus",
     project: 2,
     is_online: true,
+    last_seen: "2026-06-22T09:30:00Z",
     created_at: "2026-02-25T10:00:00Z",
   },
   {
@@ -50,6 +54,7 @@ export const mockDevices: Device[] = [
     name: "Sensor Horta 01",
     project: 3,
     is_online: false,
+    last_seen: null,
     created_at: "2026-03-12T14:00:00Z",
   },
   {
@@ -57,6 +62,7 @@ export const mockDevices: Device[] = [
     name: "",
     project: null,
     is_online: false,
+    last_seen: null,
     created_at: "2026-04-01T09:00:00Z",
   },
 ];

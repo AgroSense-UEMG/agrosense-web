@@ -9,7 +9,7 @@ export interface SensorCardProps {
   icon: LucideIcon;
   iconColor?: string;
   trendText?: string;
-  chartData: any[];
+  chartData: Record<string, unknown>[]; // 👈 A mágica contra o "any" acontece aqui
   dataKey: string;
   chartColor?: string;
 }

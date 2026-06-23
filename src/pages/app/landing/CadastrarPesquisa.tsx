@@ -8,23 +8,34 @@ export default function CadastrarPesquisa() {
   
   const [nome, setNome] = useState("")
   const [descricao, setDescricao] = useState("")
-  const [autor, setAutor] = useState("")
+  
+  // 👇 Inicialização preguiçosa: Lê o autor direto na criação do estado
+  const [autor] = useState(() => {
+    const storedData = localStorage.getItem("usuarioLogado")
+    if (storedData) {
+      try {
+        const user = JSON.parse(storedData)
+        return user.nome || user.email
+      } catch {
+        return ""
+      }
+    }
+    return ""
+  })
 
+  // 👇 O useEffect agora cuida APENAS do redirecionamento (Side Effect)
   useEffect(() => {
     const storedData = localStorage.getItem("usuarioLogado")
     
     if (!storedData) {
       toast.warn("Faça login para acessar esta página")
       navigate("/login", {
-  state: {
-    from: location.pathname
-  }
-})
-    } else {
-      const user = JSON.parse(storedData)
-      setAutor(user.nome || user.email)
+        state: {
+          from: location.pathname
+        }
+      })
     }
-  }, [navigate])
+  }, [navigate, location.pathname]) // Dependências corretas para evitar avisos amarelos
 
   const handleCadastrar = () => {
     if (!descricao.trim()) {
