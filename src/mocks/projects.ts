@@ -1,6 +1,6 @@
 /**
  * Dados Mockados - Projetos
- * 
+ *
  * TODO: Substituir por dados reais da API na Sprint 2
  * Endpoints esperados:
  * - GET /api/projects/ (lista de projetos)
@@ -15,40 +15,32 @@ import type { Project, ProjectDetails } from "@/types";
  */
 export const mockProjects: Project[] = [
   {
-    id: "1",
-    title: "Monitoramento de Solo - Fazenda Santa Clara",
+    id: 1,
+    name: "Monitoramento de Solo - Fazenda Santa Clara",
     description:
       "Análise contínua de umidade, pH e temperatura do solo para otimização de irrigação em lavoura de café.",
-    coordinator: "Dr. Carlos Silva",
-    status: "active",
-    devicesCount: 12,
+    created_at: "2026-01-15T10:00:00Z",
   },
   {
-    id: "2",
-    title: "Estação Meteorológica - Campus UEMG",
+    id: 2,
+    name: "Estação Meteorológica - Campus UEMG",
     description:
-      "Coleta de dados climáticos para pesquisa acadêmica sobre microclimas em áreas urbanas.",
-    coordinator: "Dra. Maria Santos",
-    status: "active",
-    devicesCount: 5,
+      "Coleta de dados climáticos para correlação com dados de solo e estudos acadêmicos.",
+    created_at: "2026-02-20T14:30:00Z",
   },
   {
-    id: "3",
-    title: "Irrigação Inteligente - Horta Comunitária",
+    id: 3,
+    name: "Irrigação Inteligente - Horta Comunitária",
     description:
-      "Sistema automatizado de irrigação baseado em sensores de umidade do solo e previsão meteorológica.",
-    coordinator: "Prof. João Oliveira",
-    status: "active",
-    devicesCount: 8,
+      "Automação da irrigação baseada em sensores de umidade do solo e previsão do tempo.",
+    created_at: "2026-03-10T08:00:00Z",
   },
   {
-    id: "4",
-    title: "Qualidade da Água - Reservatório Municipal",
+    id: 4,
+    name: "Qualidade da Água - Rio Paranaíba",
     description:
-      "Monitoramento de parâmetros de qualidade da água para abastecimento público.",
-    coordinator: "Dr. Carlos Silva",
-    status: "inactive",
-    devicesCount: 3,
+      "Monitoramento de pH, turbidez e oxigênio dissolvido em pontos estratégicos do rio.",
+    created_at: "2026-04-05T16:45:00Z",
   },
 ];
 
@@ -58,45 +50,37 @@ export const mockProjects: Project[] = [
  */
 export const mockProjectDetails: Record<string, ProjectDetails> = {
   "1": {
-    id: "1",
-    title: "Monitoramento de Solo - Fazenda Santa Clara",
+    id: 1,
+    name: "Monitoramento de Solo - Fazenda Santa Clara",
     description:
       "Análise contínua de umidade, pH e temperatura do solo para otimização de irrigação em lavoura de café.",
-    coordinator: "Dr. Carlos Silva",
-    status: "active",
-    devicesCount: 3,
+    created_at: "2026-01-15T10:00:00Z",
     devices: [
-      { id: "node-001", name: "Nó Sensor 01", status: "online" },
-      { id: "node-002", name: "Nó Sensor 02", status: "online" },
-      { id: "node-003", name: "Nó Sensor 03", status: "offline" },
+      { id: 1, name: "Nó Sensor 01", is_online: true },
+      { id: 2, name: "Nó Sensor 02", is_online: true },
+      { id: 3, name: "Nó Sensor 03", is_online: false },
     ],
   },
 
   "2": {
-    id: "2",
-    title: "Estação Meteorológica - Campus UEMG",
+    id: 2,
+    name: "Estação Meteorológica - Campus UEMG",
     description:
-      "Coleta de dados climáticos para pesquisa acadêmica sobre microclimas em áreas urbanas.",
-    coordinator: "Dra. Maria Santos",
-    status: "active",
-    devicesCount: 2,
+      "Coleta de dados climáticos para correlação com dados de solo e estudos acadêmicos.",
+    created_at: "2026-02-20T14:30:00Z",
     devices: [
-      { id: "node-101", name: "Estação Meteorológica 01", status: "online" },
-      { id: "node-102", name: "Estação Meteorológica 02", status: "offline" },
+      { id: 4, name: "Estação Meteo Campus", is_online: true },
     ],
   },
-  
+
   "3": {
-    id: "3",
-    title: "Irrigação Inteligente - Horta Comunitária",
+    id: 3,
+    name: "Irrigação Inteligente - Horta Comunitária",
     description:
-      "Sistema automatizado de irrigação baseado em sensores de umidade do solo e previsão meteorológica.",
-    coordinator: "Prof. João Oliveira",
-    status: "active",
-    devicesCount: 2,
+      "Automação da irrigação baseada em sensores de umidade do solo e previsão do tempo.",
+    created_at: "2026-03-10T08:00:00Z",
     devices: [
-      { id: "node-201", name: "Controlador de Irrigação 01", status: "online" },
-      { id: "node-202", name: "Sensor de Umidade 01", status: "online" },
+      { id: 5, name: "Sensor Horta 01", is_online: false },
     ],
   },
 };

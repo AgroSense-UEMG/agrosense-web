@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type MouseEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
@@ -13,7 +13,7 @@ export function Register() {
   const [confirmarSenha, setConfirmarSenha] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleRegister = async (e: any) => {
+  const handleRegister = async (e: MouseEvent<HTMLButtonElement>) => {
     if (e && e.preventDefault) e.preventDefault()
 
     if (loading) return
@@ -75,7 +75,7 @@ export function Register() {
         toast.error("Erro ao criar conta")
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error)
       toast.error("Erro de conexão. Verifique se a API está rodando.")
     } finally {

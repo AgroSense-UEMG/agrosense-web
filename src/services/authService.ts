@@ -1,5 +1,3 @@
-import { login as apiLogin } from "./api";
-
 interface ApiResponse {
   token: string;
   user: {
@@ -19,26 +17,18 @@ export async function login(email: string, senha: string) {
     throw new Error("Senha muito curta");
   }
 
-  try {
-    const data: ApiResponse = await apiLogin(email, senha);
+  // Fallback: Login real é feito via Login.tsx chamando a API diretamente
+  const fakeData: ApiResponse = {
+    token: "fake-jwt-token",
+    user: {
+      nome: "Usuário Teste",
+      email: email,
+      foto: "",
+    },
+  };
 
-    salvarSessao(data);
-    return data;
-
-  } catch {
-
-    const fakeData: ApiResponse = {
-      token: "fake-jwt-token",
-      user: {
-        nome: "Usuário Teste",
-        email: email,
-        foto: "",
-      },
-    };
-
-    salvarSessao(fakeData);
-    return fakeData;
-  }
+  salvarSessao(fakeData);
+  return fakeData;
 }
 
 function salvarSessao(data: ApiResponse) {
@@ -57,7 +47,6 @@ function salvarSessao(data: ApiResponse) {
 export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("usuarioLogado");
-
 }
 
 export function getUsuario() {

@@ -1,5 +1,6 @@
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, User, FolderKanban } from "lucide-react";
+import { Plus, FolderKanban, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,9 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/types";
-import { mockProjects, mockUser, isUserCoordinator } from "@/mocks";
+import { getProjects } from "@/services/api";
+import { CreateProjectModal } from "@/components/ui/CreateProjectModal";
+
+function isCoordinator(): boolean {
+  return !!localStorage.getItem("usuarioLogado");
+}
 
 function ProjectCard({ project }: { project: Project }) {
   const navigate = useNavigate();
@@ -18,51 +23,48 @@ function ProjectCard({ project }: { project: Project }) {
   return (
     <Card
       className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group"
-      // CLIQUE DO CARD QUE REDIRECIONA PARA A ROTA DINÂMICA
       onClick={() => navigate(`/app/projects/${project.id}`)}
     >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg font-semibold text-[hsl(var(--title-primary))] group-hover:text-primary line-clamp-2">
-            {project.title}
-          </CardTitle>
-          <Badge
-            variant={project.status === "active" ? "default" : "secondary"}
-            className={
-              project.status === "active"
-                ? "bg-primary text-primary-foreground shrink-0"
-                : "shrink-0"
-            }
-          >
-            {project.status === "active" ? "Ativo" : "Inativo"}
-          </Badge>
-        </div>
+        <CardTitle className="text-lg font-semibold text-[hsl(var(--title-primary))] group-hover:text-primary line-clamp-2">
+          {project.name}
+        </CardTitle>
         <CardDescription className="line-clamp-2 text-sm">
           {project.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <User className="h-4 w-4" />
-            <span className="truncate">{project.coordinator}</span>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <FolderKanban className="h-4 w-4" />
-            <span>{project.devicesCount} dispositivos</span>
-          </div>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Criado em {new Date(project.created_at).toLocaleDateString("pt-BR")}
+        </p>
       </CardContent>
     </Card>
   );
 }
 
 export function ProjectsPage() {
-  const isCoordinator = isUserCoordinator(mockUser);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const handleNewProject = () => {
-    console.log("Abrir modal de novo projeto");
-  };
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getProjects();
+      setProjects(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao carregar projetos.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -76,17 +78,28 @@ export function ProjectsPage() {
           </p>
         </div>
 
-        {isCoordinator && (
-          <Button onClick={handleNewProject} className="gap-2 shrink-0 w-full sm:w-auto">
-            <Plus className="h-4 w-4" />
-            Novo Projeto
-          </Button>
+        {isCoordinator() && (
+        <Button onClick={() => setModalOpen(true)} className="gap-2 shrink-0 w-full sm:w-auto">
+          <Plus className="h-4 w-4" />
+          Novo Projeto
+        </Button>
         )}
       </div>
 
-      {mockProjects.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : error ? (
+        <Card className="flex flex-col items-center justify-center p-8 sm:p-12 text-center">
+          <p className="text-destructive font-medium">{error}</p>
+          <Button variant="outline" onClick={fetchProjects} className="mt-4 gap-2">
+            Tentar novamente
+          </Button>
+        </Card>
+      ) : projects.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {mockProjects.map((project) => (
+          {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>
@@ -100,14 +113,20 @@ export function ProjectsPage() {
             Você ainda não possui projetos cadastrados. Crie um novo projeto
             para começar a monitorar seus dispositivos.
           </p>
-          {isCoordinator && (
-            <Button onClick={handleNewProject} className="mt-6 gap-2">
-              <Plus className="h-4 w-4" />
-              Criar Primeiro Projeto
-            </Button>
+          {isCoordinator() && (
+          <Button onClick={() => setModalOpen(true)} className="mt-6 gap-2">
+            <Plus className="h-4 w-4" />
+            Criar Primeiro Projeto
+          </Button>
           )}
         </Card>
       )}
+
+      <CreateProjectModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onCreated={fetchProjects}
+      />
     </div>
   );
 }

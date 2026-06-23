@@ -25,15 +25,11 @@ export interface User {
 // Project Types
 // ============================================================
 
-export type ProjectStatus = "active" | "inactive";
-
 export interface Project {
-  id: string;
-  title: string;
+  id: number;
+  name: string;
   description: string;
-  coordinator: string;
-  status: ProjectStatus;
-  devicesCount: number;
+  created_at: string;
 }
 
 export interface ProjectDetails extends Project {
@@ -44,29 +40,28 @@ export interface ProjectDetails extends Project {
 // Device Types
 // ============================================================
 
-export type DeviceStatus = "online" | "offline" | "maintenance";
-
 /**
  * Dispositivo (Nó Sensor) vinculado a um projeto
  * Usado na visualização de projetos
  */
 export interface DeviceNode {
-  id: string;
+  id: number;
   name: string;
-  status: Exclude<DeviceStatus, "maintenance">;
+  is_online: boolean;
 }
 
 /**
  * Dispositivo completo do inventário
  * Usado na página de inventário do coordenador
+ * Formato real da API: GET /api/devices/
  */
-export interface InventoryDevice {
-  id: string;
-  model: string;
-  macAddress: string;
-  alias: string;
-  linkedProject: string | null;
-  status: DeviceStatus;
+export interface Device {
+  id: number;
+  name: string;
+  project: number | null;
+  is_online: boolean;
+  last_seen: string | null; 
+  created_at: string;
 }
 
 // ============================================================

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import logo from "@/assets/Logo.png"
 
@@ -12,19 +12,18 @@ export default function NavbarLogged() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const [usuario, setUsuario] = useState<Usuario | null>(null)
-
-  useEffect(() => {
+  // 👇 Inicialização preguiçosa (lazy initialization) direto na criação do estado
+  const [usuario] = useState<Usuario | null>(() => {
     const storedData = localStorage.getItem("usuarioLogado")
-
     if (storedData) {
       try {
-        setUsuario(JSON.parse(storedData))
+        return JSON.parse(storedData)
       } catch {
-        setUsuario(null)
+        return null
       }
     }
-  }, [])
+    return null
+  })
 
   const handleLogout = () => {
     localStorage.removeItem("usuarioLogado")

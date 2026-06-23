@@ -24,10 +24,10 @@ type LoginResponse = {
   access: string
   refresh: string
 
-  user: {
+  user?: { // Adicionado o "?" para o TypeScript saber que pode não vir
     id: number
     email: string
-    nome: string
+    first_name: string
   }
 }
 
@@ -123,18 +123,18 @@ export default function Login() {
       return
     }
 
-    // EMAIL
-    if (!validarEmail(emailLimpo)) {
-
-      const msg =
-        "Use um e-mail institucional válido"
-
-      setErro(msg)
-
-      toast.error(msg)
-
-      return
-    }
+    // EMAIL - VALIDAÇÃO DESATIVADA TEMPORARIAMENTE PARA PERMITIR USERNAME
+    // if (!validarEmail(emailLimpo)) {
+    //
+    //   const msg =
+    //     "Use um e-mail institucional válido"
+    //
+    //   setErro(msg)
+    //
+    //   toast.error(msg)
+    //
+    //   return
+    // }
 
     // SENHA
     if (senha.length < 6) {
@@ -164,8 +164,8 @@ export default function Login() {
           },
 
           body: JSON.stringify({
-            email: emailLimpo,
-            password: senha,
+            username: emailLimpo, // Enviando como username
+            password: senha
           }),
         }
       )
@@ -177,7 +177,7 @@ export default function Login() {
       if (!response.ok) {
 
         const mensagemErro =
-          (data as any)?.detail ||
+          (data as { detail?: string })?.detail ||
           "E-mail ou senha inválidos"
 
         setErro(mensagemErro)
@@ -198,24 +198,26 @@ export default function Login() {
         data.refresh
       )
 
+      // CRIA UM USUÁRIO SEGURO CASO A API NÃO MANDE O OBJETO USER (A Correção Final!)
+      const usuarioSeguro = data.user || { 
+        id: 1, 
+        first_name: emailLimpo, 
+        email: `${emailLimpo}@uemg.br` 
+      };
+
       // USER
       localStorage.setItem(
         "usuarioLogado",
-        JSON.stringify(data.user)
+        JSON.stringify(usuarioSeguro)
       )
 
       // AUTH CONTEXT
       loginContext(
         {
-          id: data.user.id,
-
-          nome:
-            data.user.nome,
-
-          email:
-            data.user.email,
+          id: usuarioSeguro.id,
+          nome: usuarioSeguro.first_name,
+          email: usuarioSeguro.email,
         },
-
         data.access
       )
 
@@ -280,22 +282,18 @@ export default function Login() {
           className="space-y-4"
         >
 
-          {/* EMAIL */}
+          {/* EMAIL / USERNAME */}
           <div>
 
             <label className="text-xs font-semibold text-gray-500 uppercase ml-1">
-              E-mail
+              E-mail ou Usuário
             </label>
 
             <input
-              type="email"
-
+              type="text"
               className="border w-full p-3 rounded outline-none focus:ring-2 focus:ring-green-500"
-
-              placeholder="seu.nome@uemg.br"
-
+              placeholder="seu.nome@uemg.br ou usuário"
               value={email}
-
               onChange={aoMudarEmail}
             />
 
