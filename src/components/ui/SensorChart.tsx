@@ -14,6 +14,8 @@ export interface ChartDataPoint {
   time: string;
   temperature: number;
   humidity: number;
+  ph?: number;
+  battery?: number;
 }
 
 interface SensorChartProps {

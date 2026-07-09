@@ -1,4 +1,4 @@
-import type { Project, Device } from "@/types";
+import type { Project, Device, Member } from "@/types";
 
 const API_URL = "http://127.0.0.1:8000";
 
@@ -42,6 +42,7 @@ async function request<T>(
         errorMessage =
           (typeof errorData.message === "string" ? errorData.message : undefined) ??
           (typeof errorData.detail === "string" ? errorData.detail : undefined) ??
+          (typeof errorData.error === "string" ? errorData.error : undefined) ??
           errorMessage;
       } catch {
         /* corpo não é JSON — usa mensagem padrão */
@@ -105,4 +106,28 @@ export async function updateDevice(
     method: "PATCH",
     body: JSON.stringify(data),
   });
+}
+
+// =========================
+// MEMBERS (mock — substituir por API real)
+// =========================
+
+// TODO: substituir por GET /api/projects/{id}/members/ quando disponível
+export async function getMembers(projectId: number): Promise<Member[]> {
+  return request<Member[]>(`/api/projects/${projectId}/members/`);
+}
+
+export async function inviteMember(projectId: number, email: string): Promise<Member> {
+  return request<Member>(`/api/projects/${projectId}/invite/`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+// =========================
+// PROJECT DEVICES
+// =========================
+
+export async function getProjectDevices(projectId: number): Promise<Device[]> {
+  return request<Device[]>(`/api/projects/${projectId}/devices/`);
 }
